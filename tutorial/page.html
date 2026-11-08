@@ -1,0 +1,1384 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Rune, from zero - a tutorial in eight lessons</title>
+<style>
+  :root {
+    --paper: #f3eee4; --paper-2: #ebe4d6; --ink: #1c1a17; --muted: #6b645a; --rule: #d6ccba;
+    --accent: #c2410c; --code-bg: #15141a; --code-ink: #e8e6ef;
+    --serif: "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, serif;
+    --sans: -apple-system, "Helvetica Neue", "Segoe UI", Arial, sans-serif;
+    --mono: "SF Mono", ui-monospace, Menlo, Consolas, monospace;
+  }
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body { margin: 0; background: var(--paper); color: var(--ink); font: 17px/1.6 var(--serif); }
+  a { color: var(--accent); overflow-wrap: anywhere; }
+  .wrap { max-width: 1240px; margin: 0 auto; padding: 0 32px; }
+
+  /* masthead */
+  .mast { border-bottom: 3px double var(--ink); padding: 28px 0 18px; display: flex;
+    justify-content: space-between; align-items: baseline; font: 600 12px/1 var(--sans);
+    letter-spacing: .14em; text-transform: uppercase; }
+  .cover { display: grid; grid-template-columns: 1.15fr 1fr; gap: 48px; padding: 56px 0 40px;
+    border-bottom: 1px solid var(--rule); align-items: center; }
+  .cover h1 { font-size: clamp(48px, 7vw, 92px); line-height: .95; margin: 0 0 20px;
+    letter-spacing: -.02em; font-weight: 600; }
+  .cover h1 em { color: var(--accent); }
+  .deck { font-size: 21px; line-height: 1.45; color: #3a352e; margin: 0 0 18px; }
+  .byline { font: 13px/1.5 var(--sans); color: var(--muted); }
+
+  /* section heads */
+  section { padding: 56px 0 24px; border-bottom: 1px solid var(--rule); }
+  .kicker { font: 700 12px/1 var(--sans); letter-spacing: .16em; text-transform: uppercase;
+    color: var(--accent); margin: 0 0 12px; }
+  h2 { font-size: 44px; line-height: 1.05; margin: 0 0 14px; letter-spacing: -.015em; font-weight: 600; }
+  h3 { font: 700 13px/1.3 var(--sans); letter-spacing: .1em; text-transform: uppercase;
+    margin: 30px 0 10px; }
+  h4 { font-size: 21px; margin: 22px 0 6px; font-weight: 600; }
+  .lesson-head { display: grid; grid-template-columns: 120px 1fr; gap: 24px; align-items: start;
+    margin-bottom: 18px; }
+  .num { font-size: 120px; line-height: .8; font-weight: 600; color: var(--accent); }
+
+  /* spreads: concept on the left, its working example beside it */
+  .spread { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.08fr); gap: 44px;
+    padding: 18px 0 26px; border-top: 1px solid var(--rule); }
+  .spread:first-of-type { border-top: 0; }
+  .spread > .fig { position: sticky; top: 16px; align-self: start; }
+  .one { max-width: 760px; }
+  .lede::first-letter { float: left; font-size: 66px; line-height: .86; padding: 6px 8px 0 0;
+    color: var(--accent); font-weight: 600; }
+
+  /* figures */
+  figure { margin: 0 0 18px; }
+  figure video, figure img { width: 100%; display: block; border-radius: 10px; background: #000;
+    box-shadow: 0 1px 0 rgba(0,0,0,.05), 0 18px 40px -22px rgba(0,0,0,.45); }
+  figcaption { font: 12.5px/1.45 var(--sans); color: var(--muted); margin-top: 8px; }
+  figcaption b { color: var(--ink); }
+
+  /* code */
+  pre.code { background: var(--code-bg); color: var(--code-ink); font: 12.5px/1.55 var(--mono);
+    padding: 16px 18px; border-radius: 10px; overflow-x: auto; margin: 0 0 16px; tab-size: 4; }
+  .com { color: #8a8698; font-style: italic; } .str { color: #a7e3a1; } .num { color: #f5b97a; }
+  pre .num { font-size: inherit; line-height: inherit; font-weight: inherit; }
+  .kw { color: #ff8fb1; } .mac { color: #7dd3fc; } .ty { color: #c4b5fd; }
+  code { font: .86em var(--mono); background: var(--paper-2); padding: 1px 5px; border-radius: 4px; overflow-wrap: anywhere; }
+  pre code { background: none; padding: 0; font: inherit; }
+  pre.shell { background: #22201c; color: #f1ead9; font: 12.5px/1.6 var(--mono); padding: 14px 16px;
+    border-radius: 8px; overflow-x: auto; margin: 0 0 14px; }
+
+  /* furniture */
+  table { width: 100%; border-collapse: collapse; font: 14px/1.45 var(--sans); margin: 8px 0 18px; }
+  th { text-align: left; font-size: 11px; letter-spacing: .1em; text-transform: uppercase;
+    color: var(--muted); border-bottom: 2px solid var(--ink); padding: 6px 8px; }
+  td { border-bottom: 1px solid var(--rule); padding: 8px; vertical-align: top; }
+  td code { white-space: nowrap; }
+  .pull { font-size: 25px; line-height: 1.35; border-left: 4px solid var(--accent); padding: 2px 0 2px 18px;
+    margin: 22px 0; font-style: italic; }
+  .note { background: var(--paper-2); border-radius: 8px; padding: 14px 16px; font: 14.5px/1.55 var(--sans);
+    margin: 14px 0; }
+  .note b:first-child { font-size: 11px; letter-spacing: .12em; text-transform: uppercase; color: var(--accent);
+    display: block; margin-bottom: 4px; }
+  .stop { border: 2px solid var(--accent); }
+  details { border: 1px solid var(--rule); border-radius: 10px; padding: 0 16px; margin: 12px 0 18px;
+    background: #f8f4ec; }
+  details[open] { padding-bottom: 6px; }
+  summary { cursor: pointer; padding: 12px 0; font: 600 14px/1.4 var(--sans); }
+  summary::marker { color: var(--accent); }
+  ol.quiz li, ul li { margin: 5px 0; }
+  .checks { list-style: none; padding-left: 0; } .checks li::before { content: "☐  "; color: var(--accent); }
+  .toc { columns: 2; column-gap: 40px; font: 15px/1.9 var(--sans); padding-left: 30px; }
+  .film { display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; margin: 14px 0 20px; }
+  .film div { background: #fff8ec; border: 1px solid var(--rule); border-radius: 8px; padding: 10px 12px;
+    font: 13px/1.45 var(--sans); }
+  .film b { display: block; font: 700 11px/1.3 var(--sans); letter-spacing: .1em; text-transform: uppercase;
+    color: var(--accent); margin-bottom: 4px; }
+  .end { text-align: center; font: 700 13px/1 var(--sans); letter-spacing: .3em; text-transform: uppercase;
+    padding: 48px 0 80px; }
+
+  @media (max-width: 900px) {
+    .cover, .spread { grid-template-columns: minmax(0, 1fr); }
+    .spread > .fig { position: static; }
+    .film { grid-template-columns: 1fr 1fr; }
+    .toc { columns: 1; }
+    table { display: block; overflow-x: auto; }
+    .lesson-head { grid-template-columns: 1fr; } .num { font-size: 72px; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<div class="mast"><span>Field Guide · Native UI in Rust</span><span>Rune rev 6231f17 · November 2026</span></div>
+
+<header class="cover">
+  <div>
+    <p class="kicker">A course in eight lessons</p>
+    <h1>Rune, <em>from zero</em></h1>
+    <p class="deck">Build real, GPU-drawn desktop apps in Rust: from a light switch on a spring to fire,
+      liquid glass and shockwaves. Along the way you compile your first executable and wrap it into a Mac
+      app you can double-click.</p>
+    <p class="byline">For readers who finished Rustlings and know Python or JS/TS. Every snippet on this page is
+      cut from code that compiled against the pinned rev, and every moving picture is a recording of
+      that code running on a Mac's Metal GPU.</p>
+  </div>
+  <figure>{{video:l6_fire.mp4}}<figcaption><b>Where you're headed.</b> Lesson 6's campfire: a
+    stateful Rust app with GPU fire that grows each time you stoke it.</figcaption></figure>
+</header>
+
+<!-- ───────────────────────────── THE TICKET ───────────────────────────── -->
+<section id="contents">
+  <p class="kicker">Before you start</p>
+  <h2>How to work this guide</h2>
+  <div class="one">
+    <p><b>Goal:</b> by the end you have eight working Rune apps of your own, one bundled as a
+      double-clickable <code>.app</code>, and a headless test suite that drives one of them without a
+      window.</p>
+    <p><b>Learning style:</b> hybrid, with the scaffolding fading as you go. Lesson 1 is a
+      <i>worked</i> example: you read and run a finished app, because you can't fill in the blanks of
+      something you've never seen whole. Lessons 2-4 are <i>guided</i>: stubs with hint ladders.
+      Lessons 5-8 are <i>closer to solo</i>: a name, a shape and an expectation.<br>
+      <b>Prerequisites:</b> Rustlings (ownership, structs, enums, <code>match</code>, closures,
+      iterators), a terminal, and an Apple-silicon Mac for the bundling and effects lessons.</p>
+    <p>Follow it in order. Run every command and check that you get the expected result before you
+      move on. Try each <code>TODO(you)</code> before you open its Solution: the Solution is an answer
+      key for checking a real attempt, not a walkthrough. If anything in
+      <a href="#stop">STOP conditions</a> happens, stop and ask. Don't improvise.</p>
+    <div class="note"><b>Drift check (run first)</b>
+      <code>grep -n 'rev = ' Cargo.toml</code> must print
+      <code>6231f1753432550c72f0cd52dab3a08612ce4162</code> on both lines. Rune is pre-release, so if
+      you move the rev, an API on this page can change name. Treat a mismatch as a STOP condition.</div>
+    <ol class="toc">
+      <li><a href="#status">Status</a></li>
+      <li><a href="#why">Why this matters</a></li>
+      <li><a href="#current">Current state</a></li>
+      <li><a href="#commands">Commands you'll need</a></li>
+      <li><a href="#concepts">Concepts you'll need</a></li>
+      <li><a href="#scope">Scope</a></li>
+      <li><a href="#files">Files you'll touch</a></li>
+      <li><a href="#git">Git workflow</a></li>
+      <li><a href="#background">Background concepts</a></li>
+      <li><a href="#p1">1 · Compile your first app</a></li>
+      <li><a href="#p2">2 · Layout, keys, and a real .app</a></li>
+      <li><a href="#p3">3 · Springs and transitions</a></li>
+      <li><a href="#p4">4 · Drag</a></li>
+      <li><a href="#p5">5 · Testing without a window</a></li>
+      <li><a href="#p6">6 · GPU effects: fire</a></li>
+      <li><a href="#p7">7 · Liquid glass</a></li>
+      <li><a href="#p8">8 · Shockwave and the clock</a></li>
+      <li><a href="#test-plan">Test plan</a></li>
+      <li><a href="#done">Done criteria</a></li>
+      <li><a href="#stop">STOP conditions</a></li>
+      <li><a href="#maintenance">Maintenance notes</a></li>
+      <li><a href="#know">What you should know now</a></li>
+      <li><a href="#stretch">Stretch goals</a></li>
+      <li><a href="#alternates">Alternate solutions</a></li>
+      <li><a href="#reference">Reference</a></li>
+    </ol>
+  </div>
+</section>
+
+<section id="status">
+  <p class="kicker">Status</p>
+  <div class="one">
+    <ul>
+      <li><b>Initial priority:</b> P2</li>
+      <li><b>Effort:</b> L</li>
+      <li><b>Risk:</b> LOW (new files only, all under <code>tutorial/</code>)</li>
+      <li><b>Depends on:</b> none</li>
+      <li><b>Category:</b> feature (learning project)</li>
+      <li><b>Planned at:</b> Rune <code>dev</code> rev <code>6231f17</code>, 2026-11-08</li>
+      <li><b>Covers:</b> Rune core (state, view, layout, keys, springs, drag, <code>Runtime</code>
+        tests), rune-fx (fire, lens/goo, shockwave), and compiling and bundling a Rust binary</li>
+    </ul>
+  </div>
+</section>
+
+<section id="why">
+  <p class="kicker">Why this matters</p>
+  <div class="spread">
+    <div>
+      <p class="lede">Most desktop apps you've used are web pages in a box. Electron ships a whole
+        browser, and Tauri borrows the system's. Rune doesn't draw with a browser at all. It lays out
+        boxes with Taffy (the flexbox algorithm, in Rust), shapes text with Parley, and paints every
+        pixel itself through wgpu, which talks to Metal on a Mac. The result is one native executable
+        with no DOM, no CSS and no JavaScript runtime.</p>
+      <p>That changes what you need to know. In JS the browser decides when to repaint and the
+        bundler hides compilation. In Rune you describe the screen as a pure function of your state,
+        the framework diffs it and springs anything that moved, and <code>cargo</code> turns all of it
+        (Rune, its dependencies, your code) into one machine-code file. Lesson 1 opens that box.</p>
+      <p>There's one more reason. Every Rune app can run <i>headless</i>: it renders PNGs and video
+        and drives scripted input with no window. That's how you'll test it (Lesson 5), and it's how
+        every recording on this page was made.</p>
+    </div>
+    <div class="fig">
+      <figure>{{video:l1_switch.mp4}}<figcaption><b>Lesson 1, recorded headless.</b> The same binary
+        you'll run in a window replayed a three-tap script (<code>scripts/l1_switch.json</code>) and
+        wrote this MP4 itself.</figcaption></figure>
+    </div>
+  </div>
+</section>
+
+<section id="current">
+  <p class="kicker">Current state</p>
+  <div class="spread">
+    <div>
+      <p><code>tutorial/</code> is a self-contained Cargo package inside this repo. The solutions
+        live in <code>src/bin/</code> (one file per lesson, each its own program), the exercise stubs
+        in <code>examples/</code>, and the one piece of shared code, the effects compositor, in
+        <code>src/gfx.rs</code>.</p>
+      <p>The exemplar is Rune's own <code>examples/hello</code> at the pinned rev. Lesson 1 is that
+        app with a calculation pulled out and the sections labelled. You can read it at
+        <a href="https://github.com/anomalyco/rune/blob/6231f1753432550c72f0cd52dab3a08612ce4162/examples/hello/src/main.rs">anomalyco/rune
+        examples/hello</a>. <b>Don't edit</b> anything in the Rune repo. It's a dependency, not part of
+        this course.</p>
+      <p>The dependency block is the part of <code>Cargo.toml</code> that matters (lines 7-13):</p>
+    </div>
+    <div class="fig">
+<pre class="shell">[dependencies]
+rune = { git = "https://github.com/anomalyco/rune", rev = "6231f1753432550c72f0cd52dab3a08612ce4162" }
+rune-fx = { git = "https://github.com/anomalyco/rune", rev = "6231f1753432550c72f0cd52dab3a08612ce4162" }
+wgpu = { version = "30", default-features = false, features = ["std", "parking_lot", "metal", "wgsl"] }
+
+[target.'cfg(not(target_os = "macos"))'.dependencies]
+wgpu = { version = "30", default-features = false, features = ["vulkan", "dx12"] }</pre>
+      <figcaption>Rune isn't on crates.io yet, so cargo pulls it from git at a fixed commit, the way
+        npm can install <code>github:user/repo#sha</code>. <code>wgpu</code> is only needed by the
+        effects compositor (Lessons 6-8).</figcaption>
+    </div>
+  </div>
+</section>
+
+<section id="commands">
+  <p class="kicker">Commands you'll need</p>
+  <p>Run all of these from <code>tutorial/</code>.</p>
+  <h3>Project toolchain</h3>
+  <table>
+    <tr><th>Purpose</th><th>Command</th><th>Expected on success</th></tr>
+    <tr><td>Build every lesson, optimized</td><td><code>cargo build --release --bins</code></td><td><code>Finished `release` profile</code>, exit 0. The first build compiles every dependency (1m 13s on a 6-core Mac), and later builds take seconds</td></tr>
+    <tr><td>Check every exercise stub compiles</td><td><code>cargo build --examples</code></td><td><code>Finished</code>, exit 0 (unused-variable and unreachable-code warnings in stubs are expected)</td></tr>
+    <tr><td>Lesson 5 tests</td><td><code>cargo test --release --bin l4_swipe</code></td><td><code>3 passed; 0 failed</code></td></tr>
+    <tr><td>Your Exercise 5 tests</td><td><code>cargo test --example ex5_tests</code></td><td>3 passed once you finish it; panics at <code>todo!()</code> before that</td></tr>
+    <tr><td>Rebuild this page</td><td><code>python3 build.py</code></td><td><code>wrote rune-tutorial.html (… KB, N snippets)</code></td></tr>
+  </table>
+  <h3>Run the thing you're building</h3>
+  <table>
+    <tr><th>Purpose</th><th>Command</th><th>Expected on success</th></tr>
+    <tr><td>Open a lesson in a window</td><td><code>cargo run --release --bin l1_switch</code></td><td>A 360×220 window titled "Lesson 1 - Switch"</td></tr>
+    <tr><td>Open your exercise</td><td><code>cargo run --release --example ex2_queue</code></td><td>A window, or a <code>not yet implemented</code> panic naming the first unfinished <code>todo!()</code></td></tr>
+    <tr><td>Run the built binary directly</td><td><code>./target/release/l1_switch</code></td><td>The same window, with no cargo involved</td></tr>
+    <tr><td>Render headless to PNG</td><td><code>./target/release/l1_switch --snap on.png --scene on</code></td><td><code>on.png</code> shows "Lights on"</td></tr>
+    <tr><td>Record a scripted video</td><td><code>./target/release/l1_switch --script scripts/l1_switch.json --video l1.mp4</code></td><td>A 3.4 s <code>l1.mp4</code> of the switch flipping three times</td></tr>
+    <tr><td>Bundle a Mac app</td><td><code>scripts/bundle-mac.sh l2_queue "Up Next"</code></td><td><code>built dist/Up Next.app</code></td></tr>
+    <tr><td>Launch the bundle</td><td><code>open "dist/Up Next.app"</code></td><td>"Up Next" appears in the menu bar with its window</td></tr>
+  </table>
+  <h3>External tools and dependencies</h3>
+  <table>
+    <tr><th>Purpose</th><th>Command</th><th>Expected on success</th></tr>
+    <tr><td>Rust installer present</td><td><code>rustup --version</code></td><td>Any version. If it's missing, install from rustup.rs</td></tr>
+    <tr><td>Pinned compiler</td><td><code>cargo --version</code></td><td><code>cargo 1.99.1</code> (rustup reads <code>rust-toolchain.toml</code> and installs it on first use)</td></tr>
+    <tr><td>Video encoder (headless <code>--video</code>)</td><td><code>ffmpeg -version</code></td><td><code>ffmpeg version 7.x</code> (<code>brew install ffmpeg</code>)</td></tr>
+    <tr><td>Code signing tool (bundling)</td><td><code>codesign -h</code></td><td>Prints usage. It ships with the Xcode Command Line Tools</td></tr>
+  </table>
+</section>
+
+<section id="concepts">
+  <p class="kicker">Concepts you'll need</p>
+  <div class="one">
+    <ul>
+      <li><b>Compiling vs. interpreting.</b> Rust turns source into a machine-code file before
+        anything runs. Python and Node read your source at run time. You need this to know what
+        <code>cargo build</code> produces and why the result runs on a Mac with no Rust installed.
+        Taught in <a href="#p1">Lesson 1</a>.</li>
+      <li><b>State → view → event → state.</b> The whole Rune model (Elm style). Taught in
+        <a href="#background">Background</a> and Lesson 1.</li>
+      <li><b>Closures that capture by <code>move</code>.</b> Every event handler is one.
+        Assumed from Rustlings (<code>exercises/closures</code>), and revisited in Lesson 2.</li>
+      <li><b>Flexbox.</b> Rune's <code>row</code>/<code>col</code> follow CSS flexbox rules, so what
+        you know from the web carries over. Taught in Lesson 2.</li>
+    </ul>
+  </div>
+</section>
+
+<section id="scope">
+  <p class="kicker">Scope</p>
+  <div class="one">
+    <p><b>In scope</b> (the only files you change): your own copies of the exercises under
+      <code>tutorial/examples/</code> (or new files in <code>tutorial/src/bin/</code>), and
+      <code>tutorial/scripts/*.json</code> if you write your own replay scripts.</p>
+    <p><b>Out of scope</b> (don't touch):</p>
+    <ul>
+      <li><code>tutorial/src/gfx.rs</code>: the effects compositor. You <i>read</i> it in Lesson 6.
+        Writing GPU passes is its own course, and the stretch goal at the end points there.</li>
+      <li>The repo root (<code>Cargo.toml</code>, <code>src/</code>): the six-experiment app that
+        inspired this course. It shares the repo but not the package.</li>
+      <li>Rune itself: a git dependency at a pinned rev. The Rune team doesn't take PRs. Bugs go to
+        <a href="https://github.com/anomalyco/rune/issues">its issues</a>.</li>
+      <li>The web target (WebGPU canvas): experimental. In Chrome and Helium it clipped the canvas
+        and dropped effects, so this course is native only.</li>
+    </ul>
+  </div>
+</section>
+
+<section id="files">
+  <p class="kicker">Files you'll touch</p>
+  <p>One package, built leaf-first: shared code, then each lesson on top.</p>
+  <table>
+    <tr><th>#</th><th>File</th><th>Role</th><th>Contains</th><th>Yours or read?</th></tr>
+    <tr><td>A</td><td><code>Cargo.toml</code>, <code>rust-toolchain.toml</code>, <code>Cargo.lock</code></td><td>The package's identity and pins</td><td>Data</td><td><b>Read</b> in Lesson 1</td></tr>
+    <tr><td>B</td><td><code>src/gfx.rs</code></td><td>Turns effect slots into GPU layers</td><td>Data (marks) + one calculation + the compositor action</td><td><b>Read</b> in Lesson 6</td></tr>
+    <tr><td>C</td><td><code>src/bin/l1_switch.rs</code> … <code>l8_shock.rs</code></td><td>The solutions, one program each</td><td>Data, calculations, handler actions, <code>main</code></td><td><b>Read</b> after each attempt</td></tr>
+    <tr><td>D</td><td><code>examples/ex2_queue.rs</code> … <code>ex8_shock.rs</code></td><td>Your exercises</td><td>The same shape with <code>TODO(you)</code></td><td><b>Build</b></td></tr>
+    <tr><td>E</td><td><code>scripts/bundle-mac.sh</code></td><td>Wraps a binary in a <code>.app</code></td><td>One shell action</td><td><b>Read</b> and run in Lesson 2</td></tr>
+    <tr><td>F</td><td><code>scripts/*.json</code></td><td>Scripted input for headless recordings</td><td>Data</td><td>Optional</td></tr>
+  </table>
+  <p><b>How they connect:</b> <code>src/lib.rs</code> makes <code>gfx</code> available to every
+    binary as <code>rune_tutorial::gfx</code>. Each file in <code>src/bin/</code> and
+    <code>examples/</code> is a separate program with its own <code>main</code>.<br>
+    <b>Build order:</b> A → C1 → D2 → D3 → D4 → D5 → B (read) → D6 → D7 → D8.</p>
+</section>
+
+<section id="git">
+  <p class="kicker">Git workflow</p>
+  <div class="one">
+    <ul>
+      <li>Branch <code>&lt;you&gt;/rune-from-zero</code>.</li>
+      <li>One commit per lesson, e.g. <code>feat: add layout and keys exercise</code>. Never commit
+        <code>target/</code> or <code>dist/</code> (they're in <code>.gitignore</code>): they're
+        build output and run to gigabytes.</li>
+      <li>Don't push or open a PR unless you were asked to.</li>
+    </ul>
+  </div>
+</section>
+
+<section id="background">
+  <p class="kicker">Background concepts</p>
+  <h2>The whole model on one page</h2>
+  <div class="spread">
+    <div>
+      <h4>What is Rune? (First principles)</h4>
+      <p>Picture a flipbook. Each page is drawn fresh from a description ("the switch is on, the knob
+        is at the right"), and the animator never erases and redraws one line. Rune works the same
+        way. You write one function that describes the whole screen from your data, and Rune calls
+        it again whenever the data changes. In the jargon, this is a <b>declarative, immediate-mode
+        view</b> with a <b>retained diff</b>. Rune keeps the previous page, compares, and animates
+        what moved.</p>
+      <p><b>The pieces you'll use:</b></p>
+      <ul>
+        <li><b><code>State</code></b> (a struct you write). <i>What:</i> everything the app knows.
+          <i>When:</i> created once by <code>init</code> and changed only by handlers.</li>
+        <li><b><code>view(&amp;State, &amp;mut Cx&lt;State&gt;) -&gt; El</code></b>. <i>What:</i>
+          the screen as a tree of elements. <i>When:</i> Rune calls it after every change.
+          <i>Returns:</i> the root <code>El</code>.</li>
+        <li><b>Builders</b>: <code>el()</code>, <code>row()</code>, <code>col()</code>,
+          <code>text(..)</code>. <i>What:</i> make an <code>El</code>, then chain methods
+          (<code>.size()</code>, <code>.fill()</code>, <code>.child()</code>…).
+          <i>Returns:</i> <code>El</code>, by value, so every chain consumes and returns.</li>
+        <li><b>Handlers</b>: <code>.on_press(|s: &amp;mut State| ..)</code>,
+          <code>.on_drag(..)</code>. <i>What:</i> the only place state changes.
+          <i>When:</i> between frames, with exclusive access to the state.</li>
+        <li><b><code>AppSpec</code> + <code>rune::run</code></b>. <i>What:</i> wires title, size,
+          <code>init</code>, <code>view</code> and named <i>scenes</i> into a running app (window or
+          headless).</li>
+      </ul>
+      <p><b>Real-world analogy:</b> a theatre lighting board. The cue sheet (state) says what should
+        be lit, the board (view) turns that into fader positions, and the fade time (a spring) is
+        how the lights get there. You never animate a fader by hand.</p>
+    </div>
+    <div class="fig">
+      <h4>How one tap flows</h4>
+<pre class="shell">1. view(&amp;state)         → El tree      Calculation
+2. layout + draw        → pixels       Orchestration
+3. tap the switch       → on_press     Action
+4. state.on flips       → new data
+5. view(&amp;state) again   → new El tree  Calculation
+6. diff old/new by key  → knob x 2→18
+7. spring, ~0.25 s      → it glides    Orchestration</pre>
+      <p><b>Classification note.</b> This course sorts every piece of code into one of three
+        kinds, from <i>Grokking Simplicity</i>, plus two wiring roles:</p>
+      <div class="film">
+        <div><b>Data</b>The footage in the vault. <code>State</code>, constants. Inert.</div>
+        <div><b>Calculation</b>A colour-grade preset: same frame in, same frame out. <code>view</code>, <code>knob_x</code>.</div>
+        <div><b>Action</b>A live take: depends on when and how often. Handlers, <code>poll</code>.</div>
+        <div><b>Orchestration</b>The edit: sequences takes, shoots nothing. Rune's frame loop.</div>
+        <div><b>Main</b>The director: one per film. <code>fn main</code>.</div>
+      </div>
+      <p class="pull">Prefer data to calculations, and calculations to actions. In Rune that rule
+        is built in: the view is a calculation by type signature.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ───────────────────────────── LESSON 1 ───────────────────────────── -->
+<section id="p1">
+  <div class="lesson-head"><div class="num">1</div><div>
+    <p class="kicker">Worked example · Concepts: cargo, compiling, binaries, state → view</p>
+    <h2>Compile your first app</h2>
+    <p class="deck">A light switch, and the trip it takes from a <code>.rs</code> file to a program
+      your Mac can run.</p></div></div>
+
+  <div class="spread">
+    <div>
+      <h3>Concept: compiling</h3>
+      <p><b>Picture it first.</b> Python is a live translator who reads your script aloud to the
+        CPU, line by line, every time you run it. Rust is a translator who takes the whole book away
+        and comes back with a finished edition in the CPU's own language. It's slower to get the
+        first copy, but nobody needs the translator in the room after that.</p>
+      <p><b>What is it?</b> <b>Compiling</b> turns source code into <b>machine code</b>: CPU
+        instructions packed into an <b>executable</b> file (on a Mac, a <i>Mach-O</i> file).
+        <code>cargo</code> is Rust's all-in-one tool. If you know Node, it's npm, tsc and your bundler
+        in one:</p>
+      <table>
+        <tr><th>JS / TS</th><th>Rust</th></tr>
+        <tr><td><code>package.json</code></td><td><code>Cargo.toml</code></td></tr>
+        <tr><td><code>package-lock.json</code></td><td><code>Cargo.lock</code> (exact versions of every crate)</td></tr>
+        <tr><td><code>.nvmrc</code></td><td><code>rust-toolchain.toml</code> (pins compiler 1.99.1)</td></tr>
+        <tr><td><code>node_modules/</code></td><td><code>~/.cargo/registry</code> + <code>~/.cargo/git</code> (sources)</td></tr>
+        <tr><td><code>dist/</code></td><td><code>target/</code> (compiled output)</td></tr>
+        <tr><td><code>npm run build</code></td><td><code>cargo build --release</code></td></tr>
+        <tr><td><code>node app.js</code></td><td><code>cargo run</code> = build, then run the binary</td></tr>
+      </table>
+      <p><b>Why?</b> Rune draws 120 frames a second and does layout, text and springs on every
+        one. That needs machine code, not an interpreter. You also want to hand someone a file that
+        just runs.</p>
+      <h4>How it works</h4>
+      <p><code>cargo build</code> downloads the source of every dependency (Rune, wgpu, winit,
+        Taffy… several hundred crates), compiles each one, then compiles your code and
+        <b>links</b> it all into one file. The first build is slow (1m 13s on our 6-core Mac). After
+        that cargo reuses everything that didn't change, so a rebuild takes seconds.</p>
+      <p>There are two <b>profiles</b>:</p>
+      <ul>
+        <li><b>debug</b> (<code>cargo build</code>) → <code>target/debug/</code>. Fast to compile,
+          slow to run, full of debug info. Ours measured 35 MB.</li>
+        <li><b>release</b> (<code>cargo build --release</code>) → <code>target/release/</code>.
+          Optimized: slower to compile, fast to run. Ours measured 24 MB.</li>
+      </ul>
+      <p>Our <code>Cargo.toml</code> sets <code>[profile.dev.package."*"] opt-level = 2</code>, so
+        dependencies stay fast even in debug. Debug GPU code without it is painfully slow.</p>
+      <p><b>Where programs come from.</b> Cargo finds programs by folder. Every file in
+        <code>src/bin/</code> becomes a binary named after the file (<code>l1_switch.rs</code> →
+        <code>target/release/l1_switch</code>). Every file in <code>examples/</code> becomes one you
+        run with <code>--example</code>. <code>src/lib.rs</code> is a library the others import as
+        <code>rune_tutorial</code>.</p>
+      <p><b>Key:</b> the file in <code>target/release/</code> <i>is</i> the program. It links only
+        to frameworks that every Mac ships with. We checked with <code>otool -L</code>: AppKit,
+        Metal, CoreText and others, all under <code>/System/Library</code>. So it runs on another
+        Apple-silicon Mac with no Rust installed.</p>
+    </div>
+    <div class="fig">
+      <h4>Do it</h4>
+<pre class="shell">$ cd tutorial
+$ cargo --version
+cargo 1.99.1 (…)          # the pinned toolchain
+$ cargo build --release --bin l1_switch
+   Compiling rune v0.0.1 (https://github.com/anomalyco/rune?rev=6231f17…)
+   …
+   Compiling rune-tutorial v0.1.0 (…/tutorial)
+    Finished `release` profile [optimized] target(s) in 1m 13s
+$ ls -lh target/release/l1_switch
+-rwxr-xr-x  24M  target/release/l1_switch
+$ file target/release/l1_switch
+target/release/l1_switch: Mach-O 64-bit executable arm64
+# run the program itself - no cargo, no Rust needed:
+$ ./target/release/l1_switch
+# or render it with no window at all:
+$ ./target/release/l1_switch --snap on.png --scene on</pre>
+      <figure>{{video:l1_switch.mp4}}<figcaption><b>The program you just built.</b> Tap the
+        switch: the bool flips, the view re-runs, and the knob springs 16 pt across.</figcaption></figure>
+    </div>
+  </div>
+
+  <div class="spread">
+    <div>
+      <h3>Concept: state → view</h3>
+      <p><b>Picture it first.</b> A storyboard panel is drawn from the script, not from the
+        previous panel. Change the script ("lights on") and the panel is redrawn to match.</p>
+      <p><b>What is it?</b> <code>State</code> is <b>Data</b>, a plain struct with one
+        <code>bool</code>. <code>view</code> is a <b>Calculation</b>: it borrows the state
+        read-only (<code>&amp;State</code>) and returns an <code>El</code>. It can't change
+        anything, because Rust's borrow rules won't let it. <code>on_press</code> takes a closure
+        that gets <code>&amp;mut State</code>: that's the one <b>Action</b>.</p>
+      <p><b>Why?</b> Because <code>view</code> is pure, Rune can call it as often as it likes, and
+        you can call it in a test with no window (Lesson 5). Rust's types enforce the preference rule
+        for you.</p>
+      <p><b>Three things on the switch you'll use in every lesson:</b></p>
+      <ul>
+        <li><code>.key("knob")</code>: a stable name. Rune matches old and new trees by key, so it
+          knows this is the same knob that moved, not a new one.</li>
+        <li><code>.motion(motion::SNAPPY)</code>: changes in this subtree land on a 0.25 s spring.
+          You change the number, and Rune animates it.</li>
+        <li><code>.role("switch").label("Lights").checked(s.on)</code>: what a screen reader announces
+          ("Lights, switch, on"), through AccessKit. It's the same line of code, not a separate
+          layer.</li>
+      </ul>
+      <p><b>Why split it this way?</b> <code>knob_x</code> is a Calculation pulled out of
+        <code>view</code>. You can tell it's a calculation because it takes a <code>bool</code>,
+        returns an <code>f32</code> and touches nothing else. It's tiny, but it names the one number
+        a spring animates, so Lesson 5's test can assert "lands 16 pt over" against
+        <code>knob_x(true) - knob_x(false)</code>.</p>
+    </div>
+    <div class="fig">
+      {{snip:l1}}
+    </div>
+  </div>
+
+  <h3>Step 1.1 · Read and run (worked example)</h3>
+  <p>No stub this time: you can't fill in the blanks of an app shape you've never seen. Read the
+    code above top to bottom (imports → data → calculation → main), then build and run it with the
+    commands in "Do it".</p>
+  <h3>Step 1.2 · Work through it</h3>
+  <ol>
+    <li>Change <code>knob_x</code> to return <code>14.0</code> for "on", then rebuild. Cargo
+      recompiles only your crate, so the rebuild takes seconds, not a minute. Now the knob stops
+      short.</li>
+    <li>Swap <code>motion::SNAPPY</code> for <code>rune::Spring::new(1.0, 0.5)</code>. A slow, bouncy
+      knob shows that the spring is all there is to the animation.</li>
+    <li>Run <code>./target/release/l1_switch --list-scenes</code>. The <code>scenes</code> array in
+      <code>main</code> is just named functions that set up the state.</li>
+  </ol>
+  <h3>Step 1.3 · Quiz yourself</h3>
+  <ol class="quiz">
+    <li>You email <code>target/release/l1_switch</code> to a friend with an Apple-silicon Mac and no
+      Rust. Does it run? Would <code>src/bin/l1_switch.rs</code> run for them?</li>
+    <li>You edit one string in <code>l1_switch.rs</code>. Why is the rebuild seconds when the first
+      build was over a minute?</li>
+    <li>Could <code>view</code> flip <code>s.on</code> itself? What stops you, the compiler or a
+      convention?</li>
+    <li>Delete <code>.key("knob")</code>. Predict whether the knob still slides, then try it.</li>
+  </ol>
+  <details><summary>✅ Solution (answers)</summary>
+    <ol>
+      <li>Yes. It's a self-contained arm64 Mach-O that links only system frameworks. (macOS may warn
+        that it's from an unidentified developer; Lesson 2 signs it.) The <code>.rs</code> file
+        won't run: it's source code, and their machine has no compiler.</li>
+      <li>Cargo caches each compiled crate under <code>target/</code>. Only <code>rune-tutorial</code>
+        changed, so only it recompiles and re-links.</li>
+      <li>The compiler. <code>view</code> receives <code>&amp;State</code>, a shared borrow, and
+        assigning through it is a compile error. Purity is enforced by the type system, not by
+        discipline.</li>
+      <li>Usually yes, here. With no key, Rune matches the knob by its position among its siblings,
+        and here it's the only child. Keys matter when siblings reorder, which is Lesson 2.</li>
+    </ol>
+  </details>
+  <h3>Step 1.4 · Run it</h3>
+<pre class="shell">cargo run --release --bin l1_switch</pre>
+  <p><b>Expected output:</b> a 360×220 dark window that says "Lights off", with a switch that
+    flips and springs when you click it or press Space after Tab. <b>If it fails:</b>
+    <code>error: no bin target named</code> means you're not in <code>tutorial/</code>. A compile error
+    inside <code>rune</code> means your rev isn't <code>6231f17</code> (see the drift check).</p>
+  <p><b>✅ Lesson 1 complete. You've learned:</b> what cargo builds and where, debug vs release,
+    that a Rust binary stands alone, and the state → view → handler loop. <b>Next:</b> lay out a
+    list, give rows identities, and turn the binary into a real Mac app.</p>
+</section>
+
+<!-- ───────────────────────────── LESSON 2 ───────────────────────────── -->
+<section id="p2">
+  <div class="lesson-head"><div class="num">2</div><div>
+    <p class="kicker">Guided · Concepts: rows &amp; columns, grow, keys, iterators, .app bundles</p>
+    <h2>Layout, keys, and a real <code>.app</code></h2>
+    <p class="deck">A music queue whose rows slide to their new places, shipped as an app with a
+      name in the menu bar.</p></div></div>
+
+  <div class="spread">
+    <div>
+      <h3>Concept: flex layout</h3>
+      <p><b>Picture it first.</b> A magazine page is a grid of stacks: a column of articles, each a
+        row of photo and text. When a headline gets longer, the layout reflows instead of you
+        nudging every block.</p>
+      <p><b>What is it?</b> <code>row()</code> lays its children out left to right and
+        <code>col()</code> top to bottom. Underneath is <b>Taffy</b>, a real CSS flexbox engine, so
+        <code>.gap()</code>, <code>.padding()</code>, <code>.center_y()</code> and
+        <code>.grow(1.0)</code> mean what <code>gap</code>, <code>padding</code>,
+        <code>align-items: center</code> and <code>flex: 1</code> mean on the web.
+        <code>.absolute(x, y)</code> takes a child out of the flow (Lesson 1's knob used it).</p>
+      <p><b>Why?</b> Each queue row needs the title on the left and the length and button pinned
+        right, whatever the title's length. Once the words column grows into the spare width, that
+        happens for free.</p>
+      <div class="note"><b>Gotcha</b><code>.grow()</code> is <code>flex: 1 1 0</code>: an element is
+        only as big as the free space its parent leaves. In a column with no fixed height there is
+        none. The same rule bites on the web.</div>
+
+      <h3>Concept: keys</h3>
+      <p><b>Picture it first.</b> Actors on a stage wear name tags. When the director reshuffles
+        the line-up, everyone walks to their new mark. Without tags, the stage manager would just
+        repaint whoever stands in spot 1 to look like the new spot-1 actor.</p>
+      <p><b>What is it?</b> <code>.key(..)</code> is that name tag. Between two views Rune matches
+        elements by key, so a keyed row that moves from 4th to 1st <i>travels</i> on its spring.
+        Without keys it matches by position, and every row's text just swaps in place.</p>
+      <p><b>Teach by negative space:</b> keying a row by its <i>index</i>
+        (<code>format!("row-{i}")</code>) looks right and is wrong. After a reorder, "row-0" is a
+        different track, so nothing travels. The key has to come from something about the item that
+        doesn't change: <code>track.id</code>.</p>
+    </div>
+    <div class="fig">
+      <figure>{{video:l2_queue.mp4}}<figcaption><b>Keyed rows travel.</b> Each "Play next"
+        rebuilds the queue in a new order, and Rune moves every row from its old place to its new
+        one on <code>motion::SMOOTH</code>.</figcaption></figure>
+      {{snip:ex2}}
+    </div>
+  </div>
+
+  <h3>Step 2.1 · Stub</h3>
+  <p>The stub is on the right, and it's also <code>examples/ex2_queue.rs</code>. Pre-written: the
+    data, the button and the page frame. Yours: <code>play_next</code>, the words column and the row
+    key.</p>
+  <h3>Step 2.2 · Work through it</h3>
+  <p><b>TODO 1, <code>play_next</code>.</b> Conceptual process: (1) it takes a borrowed slice, so you
+    can't <code>remove</code> from it, which makes it a calculation by type; (2) "the picked one"
+    then "the rest" is two filtered passes over the same slice; (3) chaining iterators joins them;
+    (4) you're holding <code>&amp;Track</code>s and need <code>Track</code>s, and the derive on the
+    struct is the clue. <b>Why this approach?</b> A function that returns a new queue can be
+    unit-tested with plain asserts, and the handler shrinks to one assignment.</p>
+  <p><b>TODO 2, the words column.</b> Which builder stacks vertically, and which call makes it
+    swallow the free width?</p>
+  <p><b>TODO 3, the key.</b> Do the wrong version first (the index), run it, and watch the text swap
+    without anything moving. Then key by id.</p>
+  <h3>Step 2.3 · Quiz yourself</h3>
+  <ol class="quiz">
+    <li>Is <code>play_next</code> a Calculation or an Action? What in its signature tells you?</li>
+    <li>The closure in <code>on_press</code> is <code>move |s| …</code>. What does it move in, and
+      why can't it borrow <code>track</code> instead?</li>
+    <li>Two tracks with the same <code>id</code>: what goes wrong on screen?</li>
+  </ol>
+  <details><summary>✅ Solution (consult after your attempt)</summary>
+    {{snip:l2}}
+    <p><b>Why this works:</b> the view re-runs with the new order, and the keys let Rune see that
+      the same five rows moved rather than five rows changing text.</p>
+    <p><b>Why split it this way?</b></p>
+    <ul>
+      <li><b><code>play_next</code> is a Calculation</b>: a slice and an id in, a new
+        <code>Vec</code> out, no I/O. It's extracted because it's the only real logic in the app,
+        and it's now testable without Rune.</li>
+      <li><b><code>track_row</code> is a Calculation</b> too (it builds an <code>El</code>). It's
+        extracted because <code>view</code> loops over it, and it keeps the loop to one line.</li>
+      <li><b>The handler is an Action</b>, and it stays thin: one assignment. The decision lives in
+        the calculation.</li>
+    </ul>
+    <p>Quiz: (1) Calculation. It takes <code>&amp;[Track]</code> and returns a value, with no
+      <code>&amp;mut</code>. (2) It moves the <code>u32</code> id. The closure outlives this call
+      to <code>view</code>, so it can't hold a borrow of data that only lives for one frame.
+      (3) Two elements share a key, so Rune can't tell which is which, and the motion goes to the
+      wrong row.</p>
+  </details>
+
+  <div class="spread">
+    <div>
+      <h3>Concept: a <code>.app</code> is a folder</h3>
+      <p><b>Picture it first.</b> A film print in its can: the reel is the movie, and the label on
+        the can tells the projectionist what it's called and how to run it. The binary is the reel,
+        and the <code>.app</code> is the labelled can.</p>
+      <p><b>What is it?</b> A macOS <b>application bundle</b> is a directory that ends in
+        <code>.app</code>, which Finder shows as one icon. Inside, <code>Contents/MacOS/</code> holds
+        your executable and <code>Contents/Info.plist</code> (XML) gives its name, bundle id, and
+        which file to run. <code>codesign --sign -</code> adds an <i>ad-hoc</i> signature. Apple
+        Silicon refuses to run unsigned code, and "ad-hoc" means signed, but by nobody in
+        particular.</p>
+      <p><b>Why?</b> <code>cargo run</code> starts a bare binary: no app name in the menu bar, no
+        Dock identity, and nothing to double-click. Rune's own README says the same, and it ships
+        <code>scripts/mac-app</code> for the full version with icons, URL schemes and live relaunch.
+        Ours is a deliberately small version: 20 lines you can read.</p>
+      <p><b>When NOT to extract:</b> the script is one straight line of steps used for one job.
+        It has no functions, no config file and no options beyond the two arguments, so splitting it
+        would add names without removing any complexity. Reach for <code>scripts/mac-app</code> when
+        you need an icon or signing with your developer ID.</p>
+    </div>
+    <div class="fig">
+<pre class="shell">$ cargo build --release --bin l2_queue
+$ scripts/bundle-mac.sh l2_queue "Up Next"
+built dist/Up Next.app
+$ find "dist/Up Next.app" -type f
+dist/Up Next.app/Contents/_CodeSignature/CodeResources
+dist/Up Next.app/Contents/MacOS/l2_queue
+dist/Up Next.app/Contents/Info.plist
+$ codesign -v "dist/Up Next.app" &amp;&amp; echo signed
+signed
+$ open "dist/Up Next.app"</pre>
+      <figure>{{img:l2_app.png}}<figcaption><b>The bundle, launched with <code>open</code> on
+        macOS 27.2.</b> Rune draws under the titlebar (full-size content), which is why the page
+        uses <code>.pt(40.0)</code>: without it, "Up next" collided with the traffic lights in our
+        first capture.</figcaption></figure>
+    </div>
+  </div>
+  <h3>Step 2.4 · Run it</h3>
+<pre class="shell">cargo run --release --example ex2_queue
+scripts/bundle-mac.sh l2_queue "Up Next" &amp;&amp; open "dist/Up Next.app"</pre>
+  <p><b>Expected output:</b> your queue, where rows slide when you press "Play next". Then the
+    bundle opens with "Up Next" in the menu bar. <b>If it fails:</b> a panic that names
+    <code>ex2_queue.rs</code> points at the first unfinished <code>todo!()</code>.
+    <code>no target/release/l2_queue</code> from the script means you skipped the build. macOS says
+    the app "is damaged": the signing step failed, so check <code>codesign -h</code>.</p>
+  <p><b>✅ Lesson 2 complete. You've learned:</b> flex rows and columns, why keys must come from
+    identity rather than position, and what's inside a Mac app. <b>Next:</b> take control of the
+    motion itself.</p>
+</section>
+
+<!-- ───────────────────────────── LESSON 3 ───────────────────────────── -->
+<section id="p3">
+  <div class="lesson-head"><div class="num">3</div><div>
+    <p class="kicker">Guided · Concepts: springs, duration &amp; bounce, enter/exit transitions</p>
+    <h2>Springs and transitions</h2>
+    <p class="deck">Three balls, three springs, one target, plus a word that knows how to arrive
+      and how to leave.</p></div></div>
+  <div class="spread">
+    <div>
+      <h3>Concept: springs, not timelines</h3>
+      <p><b>Picture it first.</b> A door closer. You don't program the door's path: you set how
+        stiff the closer is, and wherever you let go of the door, it swings shut along a natural
+        curve. Push it mid-swing and it changes direction smoothly, with no jump.</p>
+      <p><b>What is it?</b> A <b>spring</b> is a physical model that moves a value toward a
+        target. <code>Spring::new(duration, bounce)</code> describes it in designer units: about how
+        long it takes to settle, and how much it overshoots (0 = none). Rune's tokens are named
+        springs: <code>SNAPPY</code> (0.25 s, 0), <code>PLAYFUL</code> (0.25 s, 0.15),
+        <code>SMOOTH</code> (0.32 s, 0).</p>
+      <p><b>Why?</b> A CSS transition restarts from the current value with zero velocity, so a
+        fast double-tap looks broken. A spring keeps its velocity when the target changes
+        (<i>retargeting</i>), and that's what makes motion feel physical.</p>
+      <h3>Concept: transitions</h3>
+      <p><b>Picture it first.</b> An actor's entrance and exit, rehearsed separately: walk in from
+        stage left, exit through the trapdoor.</p>
+      <p><b>What is it?</b> An element that appears or disappears between two views has
+        <b>presence</b>. <code>.transition(..)</code> says how it enters and exits.
+        <code>Transition::offset(0, 10).combined(Transition::opacity())</code> rises and fades.
+        <code>Transition::asymmetric(enter, exit)</code> uses different moves for each (Lesson 4).
+        Exiting elements stay drawn until their exit finishes, so you just delete them from the
+        state.</p>
+    </div>
+    <div class="fig">
+      <figure>{{video:l3_springs.mp4}}<figcaption><b>Same target, three springs.</b> SNAPPY
+        lands first with no overshoot, PLAYFUL wobbles, and the custom
+        <code>Spring::new(0.8, 0.45)</code> sails past the end and settles. "Wheee" rises in and
+        drops out.</figcaption></figure>
+      {{snip:ex3}}
+    </div>
+  </div>
+  <h3>Step 3.1 · Stub</h3>
+  <p><code>examples/ex3_springs.rs</code>, shown above. Four TODOs: a spring you design, the end
+    positions, attaching the spring, and the entrance and exit.</p>
+  <h3>Step 3.2 · Work through it</h3>
+  <p><b>TODO 2:</b> the ball's position is its <i>left edge</i>. At the far end, the edge sits one
+    ball-width short of the track's end. <b>TODO 3:</b> you never say "go from A to B". Lesson 1's
+    switch set something on the element, so look there. <b>TODO 4:</b> the enter and the exit are
+    each a <code>Transition</code>, and two can be combined. <b>Why this approach?</b> Motion
+    lives on the element as a property, so the view stays a pure description of where things
+    <i>are</i>.</p>
+  <h3>Step 3.3 · Quiz yourself</h3>
+  <ol class="quiz">
+    <li>Press Go twice quickly. Why doesn't the custom ball stop and restart from zero speed?</li>
+    <li>Put <code>.motion(..)</code> on the outer <code>col()</code> instead of each ball. What
+      changes, and why? (Hint: motion is inherited.)</li>
+    <li>Remove the <code>if s.right</code> and always show "Wheee" with
+      <code>.opacity(if s.right {1.0} else {0.0})</code>. What's lost?</li>
+  </ol>
+  <details><summary>✅ Solution (consult after your attempt)</summary>
+    {{snip:l3}}
+    <p><b>Why split it this way?</b> <code>ball_x</code> is a Calculation with a boundary worth
+      naming (the far edge is <code>TRACK_W - BALL</code>). <code>lane</code> is a Calculation that
+      builds one repeated piece. <code>LANES</code> is <b>Data</b>: making the springs a table, not
+      three hand-written lanes, is the preference rule in action. Adding a lane is now a data edit,
+      not a code edit.</p>
+    <p>Quiz: (1) Retargeting keeps the current position and velocity. (2) Every ball inherits the
+      same spring, so all three move identically: inheritance goes down the tree, and the nearest
+      <code>.motion</code> wins. (3) The element never leaves the tree, so it still takes layout
+      space and screen-reader focus. Presence (mount and unmount) is what makes it truly
+      gone.</p>
+  </details>
+  <h3>Step 3.4 · Run it</h3>
+<pre class="shell">cargo run --release --example ex3_springs</pre>
+  <p><b>Expected output:</b> three lanes, and Go sends the balls across on visibly different
+    curves. <b>If it fails:</b> the balls jump, so the spring isn't attached to the ball (TODO 3).
+    The ball pokes out of its track: <code>ball_x</code> forgot the ball's own width.</p>
+  <p><b>✅ Lesson 3 complete. You've learned:</b> springs as properties, retargeting, and
+    presence transitions. <b>Next:</b> hand the motion to the user's finger.</p>
+</section>
+
+<!-- ───────────────────────────── LESSON 4 ───────────────────────────── -->
+<section id="p4">
+  <div class="lesson-head"><div class="num">4</div><div>
+    <p class="kicker">Guided · Concepts: on_drag, gesture phases, offset, thresholds</p>
+    <h2>Drag</h2>
+    <p class="deck">Swipe-to-archive notifications: they follow your finger exactly, and let go
+      decides their fate.</p></div></div>
+  <div class="spread">
+    <div>
+      <h3>Concept: a gesture has phases</h3>
+      <p><b>Picture it first.</b> A slingshot: grab, pull, release. What happens depends only on
+        how far you pulled when you let go.</p>
+      <p><b>What is it?</b> <code>.on_drag(|s, d, tx| ..)</code> runs once per phase of a pointer
+        gesture: <code>Phase::Down</code>, then <code>Move</code> many times, then <code>Up</code>.
+        <code>d.dx</code>/<code>d.dy</code> is how far the pointer has travelled since the press.
+        Moves inside a drag land <i>instantly</i>, because the finger is the animation. The spring
+        only takes over when you let go.</p>
+      <p><code>.offset(dx, 0)</code> draws the card shifted without moving it in layout, so its
+        neighbours hold still while you drag.</p>
+      <p><b>Why?</b> Without phases you'd have to track "is the mouse down" yourself, which is
+        state that goes stale the moment a release happens outside the window.</p>
+      <p><b>Teach by negative space:</b> the tempting version puts
+        <code>if d.dx.abs() &gt; 110.0 { remove } else { reset }</code> straight in the
+        <code>Up</code> arm. It works, and it hides your app's one real decision inside a closure
+        that needs a live pointer to run. Pull it out into <code>release(dx) -&gt; Release</code>,
+        and the decision becomes a calculation you can test with one line (Lesson 5).</p>
+    </div>
+    <div class="fig">
+      <figure>{{video:l4_swipe.mp4}}<figcaption><b>Short drag, long drag, other direction.</b>
+        "New comment" is pulled 70 pt and springs home. Then it's thrown left past the threshold,
+        and "Battery low" is thrown right. Each one exits the way it was thrown, through
+        <code>Transition::asymmetric</code>.</figcaption></figure>
+      {{snip:l4-release}}
+      {{snip:l4-drag}}
+    </div>
+  </div>
+  <h3>Step 4.1 · Stub</h3>
+  {{snip:ex4}}
+  <h3>Step 4.2 · Work through it</h3>
+  <p><b>TODO 1:</b> which side of the threshold "exactly 110" falls on is a product decision.
+    Pick one and write it down, because Lesson 5 will pin it. Negative <code>dx</code> is a left
+    swipe, and there's a one-word method that ignores the sign. <b>TODO 2:</b> one assignment.
+    <b>TODO 3:</b> <code>match</code> on what <code>release</code> returns, and for each arm change
+    the state, nothing else. <b>Why this approach?</b> The handler gathers inputs, asks the
+    calculation, and applies the answer: an Action kept as thin as it can be.</p>
+  <h3>Step 4.3 · Quiz yourself</h3>
+  <ol class="quiz">
+    <li>Archive removes the card from <code>Vec</code> right away. Why do you still see it fly
+      off?</li>
+    <li>Why is <code>away</code> computed from <code>c.dx</code> in the <i>view</i>, rather than
+      stored in the state on release?</li>
+    <li>The handler looks the card up by <code>id</code> each time instead of capturing its index.
+      What bug does that avoid?</li>
+  </ol>
+  <details><summary>✅ Solution (consult after your attempt)</summary>
+    {{snip:l4}}
+    <p><b>Why split it this way?</b> <code>release</code> and <code>fade</code> are Calculations
+      (numbers in, a value out). <code>Release</code> is Data: an enum names the two outcomes so a
+      typo can't invent a third. The drag closure is the Action, and it never decides anything
+      itself.</p>
+    <p>Quiz: (1) Presence: the removed element keeps drawing until its exit transition settles.
+      (2) It's derived from data the view already has, so storing it would be a second copy that
+      could disagree. (3) After an archive, indices shift, and a captured index would point at the
+      next card.</p>
+  </details>
+  <h3>Step 4.4 · Run it</h3>
+<pre class="shell">cargo run --release --example ex4_swipe</pre>
+  <p><b>Expected output:</b> cards track your pointer 1:1, a short pull springs back, and a long
+    one flies off and the rest close the gap. <b>If it fails:</b> the card lags behind the pointer,
+    so you put a spring on the drag. Nothing archives on a left swipe: the sign.</p>
+  <p><b>✅ Lesson 4 complete. You've learned:</b> gesture phases, offset vs layout, and keeping
+    decisions out of handlers. <b>Next:</b> prove it works with no window and no mouse.</p>
+</section>
+
+<!-- ───────────────────────────── LESSON 5 ───────────────────────────── -->
+<section id="p5">
+  <div class="lesson-head"><div class="num">5</div><div>
+    <p class="kicker">Closer to solo · Concepts: Runtime, virtual clock, dependency injection, cargo test</p>
+    <h2>Testing without a window</h2>
+    <p class="deck">Drive Lesson 4 with a fake finger and a fake clock, and assert on both the
+      state and the screen.</p></div></div>
+  <div class="spread">
+    <div>
+      <h3>Concept: a headless runtime</h3>
+      <p><b>Picture it first.</b> A flight simulator: the real cockpit software, real
+        instruments, but the "sky" is supplied by the test rig, one frame at a time.</p>
+      <p><b>What is it?</b> <code>rune::Runtime::new(state, view, size, env)</code> runs your real
+        <code>view</code> and Rune's real layout, springs and hit-testing, with no window and no GPU.
+        You are the clock: <code>rt.frame(1.0 / 60.0)</code> advances it one frame. You are the
+        finger: <code>rt.pointer_down/move/up(x, y)</code>. You read the results with
+        <code>rt.state</code> (the data), <code>rt.find(key)</code> (an element's centre) and
+        <code>rt.presented(key)</code> (its drawn rect, mid-spring included).</p>
+      <p><b>Why?</b> It's dependency injection. The app never reads the time or the mouse itself:
+        Rune hands both in. So a test can hand in fake ones and get the same result every run, in
+        milliseconds, on CI.</p>
+      <p><b>Test what a user would notice:</b> "the card is gone" and "it's drawn back home", not
+        "<code>dx</code> was set to 0". Then a refactor of the internals doesn't break the
+        tests.</p>
+      <p>Tests sit in a <code>#[cfg(test)] mod tests</code> at the bottom of the same file. Only
+        <code>cargo test</code> compiles them, so they never ship in the binary.</p>
+    </div>
+    <div class="fig">
+      {{snip:ex5}}
+<pre class="shell">$ cargo test --release --bin l4_swipe
+running 3 tests
+test tests::release_archives_at_the_threshold_in_either_direction ... ok
+test tests::a_short_drag_springs_home ... ok
+test tests::a_long_drag_archives_the_card ... ok
+test result: ok. 3 passed; 0 failed; … finished in 0.02s</pre>
+    </div>
+  </div>
+  <h3>Step 5.1 · Stub</h3>
+  <p>Above. <code>python3 build.py</code> also writes it to <code>examples/ex5_tests.rs</code>,
+    glued under the Lesson 4 app.</p>
+  <h3>Step 5.2 · Work through it</h3>
+  <p>Mutation check when you're done: change <code>&gt;=</code> to <code>&gt;</code> in
+    <code>release</code>, or delete the <code>.abs()</code>. At least one test must go red. If
+    none does, the test isn't testing that line.</p>
+  <h3>Step 5.3 · Quiz yourself</h3>
+  <ol class="quiz">
+    <li>Why move the pointer in 10 steps with a frame each, rather than one jump?</li>
+    <li>The first test needs no <code>Runtime</code> at all. Which earlier decision made that
+      possible?</li>
+    <li>A test passes on your laptop and fails on CI only sometimes. In Rune headless, what's the
+      one source of time, and could it be the cause?</li>
+  </ol>
+  <details><summary>✅ Solution (consult after your attempt)</summary>
+    {{snip:l5}}
+    <p>Quiz: (1) Each frame delivers one <code>Move</code> phase. One jump is one move, and the
+      press-to-drag threshold and the follow behaviour are never exercised. (2) Pulling
+      <code>release</code> out as a calculation in Lesson 4. (3) Only <code>rt.frame(dt)</code>,
+      which is fixed, so it's not time. Look for something nondeterministic you introduced, like a
+      <code>HashMap</code> iteration order.</p>
+  </details>
+  <h3>Step 5.4 · Run it</h3>
+<pre class="shell">cargo test --example ex5_tests</pre>
+  <p><b>Expected output:</b> <code>3 passed</code>. <b>If it fails:</b> <code>find</code> returns
+    <code>None</code>, so you forgot <code>rt.frame(0.0)</code> before querying. "Back home" fails
+    by a few points: run more settling frames.</p>
+  <p><b>✅ Lesson 5 complete. You've learned:</b> headless runtimes, the clock as an injected
+    dependency, and asserting on state and screen together. <b>Next:</b> the GPU.</p>
+</section>
+
+<!-- ───────────────────────────── LESSON 6 ───────────────────────────── -->
+<section id="p6">
+  <div class="lesson-head"><div class="num">6</div><div>
+    <p class="kicker">Closer to solo · Concepts: effect slots, compositor, effect_data, bleed</p>
+    <h2>GPU effects: fire</h2>
+    <p class="deck">The view marks a box. A compositor paints fire into it on the GPU, and you
+      steer it with four numbers.</p></div></div>
+  <div class="spread">
+    <div>
+      <h3>Concept: effect slots</h3>
+      <p><b>Picture it first.</b> A green screen on set. The actors (your UI) are filmed around a
+        green rectangle, and in post the VFX house fills it with fire. The rectangle is cheap, and
+        the fire is someone else's pipeline.</p>
+      <p><b>What is it?</b> <code>rune::effect(MARK)</code> is an element that draws nothing. It
+        just reserves a box in the paint order. A <b>compositor</b> (<code>src/gfx.rs</code>,
+        adapted from Rune's showreel) runs every frame, finds each slot, reads its mark (which
+        effect) and its <code>.effect_data([f32; 4])</code> (four numbers), and asks
+        <b>rune-fx</b> to paint that effect there with wgpu. <code>.effect_bleed(pt)</code> lets
+        the effect draw outside the box. Flames rise far above a 24-pt slot.
+        <code>rune::run_with(spec, Gfx::default())</code> attaches the compositor.</p>
+      <p><b>Why?</b> UI elements are rectangles, text and gradients. Fire is a fluid simulation.
+        The slot lets the declarative view say <i>where</i> and <i>how much</i>, and leaves the
+        <i>how</i> to a shader.</p>
+      <p><b>Paint order is z-order:</b> later children draw on top. Put the log after the fire
+        and it sits in front of the flames.</p>
+      <h4>Read: the projector (<code>src/gfx.rs</code>)</h4>
+      <p>You don't write this file. Read just two parts. The <b>marks</b> are Data, the contract
+        between your view and the compositor. <code>layer</code> is a Calculation that turns one
+        slot's mark and numbers into one rune-fx layer. The rest is the Action that talks to the
+        GPU.</p>
+      <div class="note"><b>Two bugs we already hit</b>A slot smaller than 1 pt sends NaNs into the
+        shaders, so <code>gfx.rs</code> skips it. And software GPUs (a Linux VM's lavapipe) render
+        these effects differently from Metal, so judge effects on real hardware.</div>
+    </div>
+    <div class="fig">
+      <figure>{{video:l6_fire.mp4}}<figcaption><b>Stoke it three times.</b> Each press bumps
+        <code>heat</code>, <code>flames(heat)</code> recomputes the shader's height and intensity,
+        and the GPU fire simulation follows.</figcaption></figure>
+      {{snip:marks}}
+      {{snip:layer}}
+    </div>
+  </div>
+  <h3>Step 6.1 · Stub</h3>
+  {{snip:ex6}}
+  <h3>Step 6.2 · Work through it</h3>
+  <p>Three TODOs, with fewer hints now. Watch for integer division in TODO 1. TODO 3 is a
+    prediction: write down "in front" or "behind" before you run it.</p>
+  <h3>Step 6.3 · Quiz yourself</h3>
+  <ol class="quiz">
+    <li>Is <code>flames</code> a Calculation? Is drawing the fire?</li>
+    <li>Why is the effect's data a <code>[f32; 4]</code> and not your own struct?</li>
+    <li>Remove <code>.effect_bleed(..)</code>. What do you predict?</li>
+  </ol>
+  <details><summary>✅ Solution (consult after your attempt)</summary>
+    {{snip:l6}}
+    <p><b>When NOT to extract:</b> <code>log</code> stays an inline <code>let</code>, not a
+      <code>fn log()</code>. It's used once, takes no input and has no logic, so a function would
+      add a name and remove nothing. <code>flames</code> earns its function: it holds the one
+      mapping you'll want to tune and test.</p>
+    <p>Quiz: (1) <code>flames</code>, yes. Drawing is an Action owned by the compositor, outside
+      your app code. (2) The slot's payload travels with Rune's per-instance GPU data, which is a
+      fixed four floats. The marks table documents what each one means. (3) The flames are cut off
+      at the slot's top edge.</p>
+  </details>
+  <h3>Step 6.4 · Run it</h3>
+<pre class="shell">cargo run --release --example ex6_fire</pre>
+  <p><b>Expected output:</b> low embers on a log, and flames that roar after three stokes.
+    <b>If it fails:</b> nothing draws, so check you used <code>run_with</code>, not
+    <code>run</code>. Flames clipped flat: bleed.</p>
+  <p><b>✅ Lesson 6 complete. You've learned:</b> effect slots, marks and data, and that paint
+    order is z-order. <b>Next:</b> an effect that reads what's behind it.</p>
+</section>
+
+<!-- ───────────────────────────── LESSON 7 ───────────────────────────── -->
+<section id="p7">
+  <div class="lesson-head"><div class="num">7</div><div>
+    <p class="kicker">Closer to solo · Concepts: backdrop effects, gooey union, Tx::instant</p>
+    <h2>Liquid glass</h2>
+    <p class="deck">A glass pill that bends the stripes behind it, and a drop you can pull out
+      that clings like water.</p></div></div>
+  <div class="spread">
+    <div>
+      <h3>Concept: effects that read the backdrop</h3>
+      <p><b>Picture it first.</b> A magnifying glass on a newspaper. The glass has no picture of
+        its own: it bends the print beneath it. Move the paper, and the glass shows the new
+        print.</p>
+      <p><b>What is it?</b> <code>.effect_backdrop(true)</code> marks a slot that needs to
+        <i>read</i> everything drawn before it. Rune pauses the frame there, copies what's been
+        drawn so far, hands the copy to the compositor, then carries on. The LENS effect refracts
+        that copy through a bevelled shape. Give it a second circle and the two shapes merge with a
+        <b>smooth union</b>, the gooey bridge you see when the drop is close. It's the same math
+        that makes metaballs.</p>
+      <p><b>Why?</b> A backdrop read costs a pause and a copy, so it's opt-in per slot. Ordinary
+        slots never pay for it.</p>
+      <p><code>tx.instant()</code> inside the <code>Move</code> arm lands the drag change without
+        a spring. This handler moves the <i>effect's data</i>, not an element with drag-follow
+        built in, so you say it yourself.</p>
+      <div class="note"><b>Gotcha we hit</b>rune-fx's lens draws a drop shadow by default, and the
+        shadow follows the goo: a dark rectangle trails the drop. <code>gfx.rs</code> sets
+        <code>shadow: 0.0</code>. It only showed in a live window, not in still snaps.</div>
+    </div>
+    <div class="fig">
+      <figure>{{video:l7_glass.mp4}}<figcaption><b>Pulled down, then sideways.</b> Close to the
+        pill the drop and glass stay joined by a liquid neck, they split as it moves away, and on
+        release the drop springs home and fuses back in.</figcaption></figure>
+      {{snip:ex7}}
+    </div>
+  </div>
+  <h3>Step 7.2 · Work through it</h3>
+  <p>Four TODOs. For TODO 3, try it without <code>tx.instant()</code> first and describe what you
+    feel. That's the negative space for this lesson.</p>
+  <h3>Step 7.3 · Quiz yourself</h3>
+  <ol class="quiz">
+    <li>Move <code>.child(glass)</code> above <code>.child(stripes())</code>. What does the lens
+      show, and why?</li>
+    <li>On release, <code>pull</code> becomes <code>(0, 0)</code>. What makes the drop
+      <i>spring</i> home rather than teleport?</li>
+  </ol>
+  <details><summary>✅ Solution (consult after your attempt)</summary>
+    {{snip:l7}}
+    <p>Quiz: (1) Just the plain background. The backdrop is only what was drawn <i>before</i> the
+      slot. (2) The <code>Up</code> commit isn't instant, so the handle element springs on its
+      default motion, and the slot's data follows the view, which the runtime re-runs while the
+      spring is in flight.</p>
+  </details>
+  <h3>Step 7.4 · Run it</h3>
+<pre class="shell">cargo run --release --example ex7_glass</pre>
+  <p><b>Expected output:</b> bent stripes inside the pill, and a drop that stretches out with a
+    neck, snaps free, and springs home. <b>If it fails:</b> a flat dark pill means no backdrop
+    flag. A drop that lags your pointer: no <code>instant</code>.</p>
+  <p><b>✅ Lesson 7 complete. You've learned:</b> backdrop reads, smooth unions, and choosing
+    instant vs sprung per commit. <b>Next:</b> effects driven by time.</p>
+</section>
+
+<!-- ───────────────────────────── LESSON 8 ───────────────────────────── -->
+<section id="p8">
+  <div class="lesson-head"><div class="num">8</div><div>
+    <p class="kicker">Solo · Concepts: poll, the clock as data, start times over timers</p>
+    <h2>Shockwave and the clock</h2>
+    <p class="deck">Press a button and a ring of distortion ripples through every tile on
+      screen.</p></div></div>
+  <div class="spread">
+    <div>
+      <h3>Concept: store <i>when</i>, not <i>how far along</i></h3>
+      <p><b>Picture it first.</b> A stopwatch photo. You don't keep updating a note that says "the
+        race is 3.2 s old": you write down when the gun went off, and anyone with a clock can work
+        out the rest.</p>
+      <p><b>What is it?</b> <code>AppSpec::poll</code> is a function Rune calls every frame with the
+        current time. It's an <b>Action</b> (it depends on when it runs), and it's the only place
+        your app touches the clock. Copy <code>now</code> into the state there. The handler records
+        <code>fired_at = s.now</code>, and the shader gets <code>fired_at</code> and computes the
+        ring's radius itself from the compositor's own time.</p>
+      <p><b>Teach by negative space:</b> the tempting design is a <code>progress: f32</code> that
+        <code>poll</code> nudges up every frame. It drifts if a frame is skipped, it needs a "done"
+        flag, and it forces the view to rebuild 60 times a second. A start time is one number,
+        written once. Rune only runs frames, and so <code>poll</code>, while something asks for them,
+        so <code>poll</code> calls <code>tx.wake_after(Duration::ZERO)</code> to ask for the next
+        one. Without it a press can stamp a stale <code>now</code>. <code>poll</code> returns
+        <code>false</code> because nothing the
+        <i>view</i> draws changed: the GPU animates on its own, since the compositor reports
+        <code>animating() = true</code>.</p>
+      <p><b>DI again:</b> because <code>poll</code> <i>receives</i> <code>now</code> instead of
+        reading the system clock, a headless run (and a test) controls time completely. That's why
+        the recording on the right is identical every time we render it.</p>
+    </div>
+    <div class="fig">
+      <figure>{{video:l8_shock.mp4}}<figcaption><b>Two presses, 1.5 s apart.</b> Each one stamps
+        <code>fired_at</code>, and the SHOCK slot (drawn last, reading the backdrop) bends the tiles,
+        the caption and the button itself as the ring passes.</figcaption></figure>
+      {{snip:ex8}}
+    </div>
+  </div>
+  <h3>Step 8.3 · Quiz yourself</h3>
+  <ol class="quiz">
+    <li>Why must the SHOCK slot be the <i>last</i> child?</li>
+    <li>What happens if <code>fired_at</code> starts at <code>0.0</code>?</li>
+    <li><code>poll</code> returns <code>true</code> forever. What does it cost, and who notices?</li>
+  </ol>
+  <details><summary>✅ Solution (consult after your attempt)</summary>
+    {{snip:l8}}
+    <p>Quiz: (1) It distorts what was drawn before it, so anything after it is untouched.
+      (2) A wave plays at launch, because time 0 is "just now". (3) The view rebuilds every frame
+      for nothing: wasted CPU, and on a laptop, battery. Rune's own guidance is that
+      <code>poll</code> returns true only when visible state changed.</p>
+  </details>
+  <h3>Step 8.4 · Run it</h3>
+<pre class="shell">cargo run --release --example ex8_shock</pre>
+  <p><b>Expected output:</b> a calm grid, and each Boom sends one ring out across the window.
+    <b>If it fails:</b> a wave at launch means the <code>fired_at</code> default. A wave that starts late, or not
+    at all, means <code>poll</code> isn't asking for frames, so <code>now</code> is stale when you
+    press.</p>
+  <p><b>✅ Lesson 8 complete. You've learned:</b> <code>poll</code> as the one clock Action,
+    start times over counters, and backdrop distortion. <b>Next:</b> the closing checks.</p>
+</section>
+
+<!-- ───────────────────────────── FINISHING ───────────────────────────── -->
+<section id="test-plan">
+  <p class="kicker">Test plan</p>
+  <div class="one">
+    <ol>
+      <li>Setup: <code>cd tutorial &amp;&amp; cargo --version</code> → <code>1.99.1</code>.</li>
+      <li><code>cargo build --release --bins</code> → <code>Finished</code>, exit 0.</li>
+      <li><code>cargo build --examples</code> → <code>Finished</code>, exit 0. Your exercises
+        compile.</li>
+      <li><code>cargo test --release --bin l4_swipe</code> and
+        <code>cargo test --example ex5_tests</code> → <code>3 passed</code> each.</li>
+      <li>Open each of your exercises with <code>cargo run --release --example exN_…</code>, and
+        compare it to its recording on this page.</li>
+      <li><code>scripts/bundle-mac.sh l2_queue "Up Next" &amp;&amp; open "dist/Up Next.app"</code> → the
+        menu bar says "Up Next".</li>
+      <li>Teardown: <code>rm -rf dist</code> (and <code>cargo clean</code> if you need the disk
+        back: <code>target/</code> runs to gigabytes).</li>
+    </ol>
+    <p>A unit test for every view would be disproportionate. Lesson 5's three tests cover the one
+      decision with a boundary. Verify the visual lessons by running them next to the
+      recordings.</p>
+  </div>
+</section>
+
+<section id="done">
+  <p class="kicker">Done criteria</p>
+  <div class="spread">
+    <div>
+      <h3>Per step</h3>
+      <ul class="checks">
+        <li>L1: <code>file target/release/l1_switch</code> prints <code>Mach-O 64-bit executable arm64</code></li>
+        <li>L2: <code>codesign -v "dist/Up Next.app"</code> exits 0</li>
+        <li>L3: <code>cargo run --release --example ex3_springs</code> shows three lanes moving on different curves</li>
+        <li>L4: <code>grep -c todo! examples/ex4_swipe.rs</code> prints <code>0</code> and the cards swipe</li>
+        <li>L5: <code>cargo test --example ex5_tests</code> → <code>3 passed</code></li>
+        <li>L6: <code>grep -c todo! examples/ex6_fire.rs</code> → <code>0</code>, and flames grow on stoke</li>
+        <li>L7: <code>grep -c effect_backdrop examples/ex7_glass.rs</code> → <code>1</code>, and the stripes bend</li>
+        <li>L8: <code>grep -c todo! examples/ex8_shock.rs</code> → <code>0</code>, and no wave at launch</li>
+      </ul>
+    </div>
+    <div>
+      <h3>Final gates</h3>
+      <ul class="checks">
+        <li><code>cargo build --release --bins --examples</code> exits 0</li>
+        <li><code>cargo clippy --release --examples</code> shows no errors</li>
+        <li><code>cargo test --release</code> → every suite passes</li>
+        <li><code>git status --short</code> lists only files under <code>tutorial/examples/</code> (or your new <code>src/bin/</code> files)</li>
+        <li><code>git status --short --ignored | grep -E 'target|dist'</code> shows them as ignored (<code>!!</code>), never staged</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<section id="stop">
+  <p class="kicker">STOP conditions</p>
+  <div class="note stop one"><b>Stop and ask instead of improvising when</b>
+    <ul>
+      <li><b>Drift:</b> the rev in <code>Cargo.toml</code> isn't <code>6231f17…</code>, or a method
+        name on this page doesn't exist (<code>no method named … found for struct El</code>).</li>
+      <li><b>Symptom unchanged after the fix:</b> you changed the code and the window looks the
+        same, which usually means you're running a different binary (<code>--bin</code> vs
+        <code>--example</code>) than the one you edited.</li>
+      <li>You find yourself editing <code>src/gfx.rs</code> or anything in Rune to make an exercise
+        work.</li>
+      <li>An effect looks wrong only on a VM or Linux software GPU: that's a known rendering
+        difference, not your bug.</li>
+      <li>macOS blocks the <code>.app</code>, and the fix seems to involve disabling Gatekeeper or
+        System Integrity Protection. Don't.</li>
+    </ul>
+  </div>
+</section>
+
+<section id="maintenance">
+  <p class="kicker">Maintenance notes</p>
+  <div class="one">
+    <ul>
+      <li>Rune is pre-release, and its <code>dev</code> branch moves daily. Bumping the rev is a
+        deliberate act: change both lines, run the Test plan, and rebuild this page
+        (<code>python3 build.py</code>). Snippets are cut from the compiled files, so a renamed API
+        fails the build, not the reader.</li>
+      <li>The recordings are made on a Mac (Metal) with each lesson's
+        <code>--script scripts/lN.json --video media/lN.mp4 --scale 2</code>. Re-record after a
+        rev bump, because effects can change between revs.</li>
+      <li>Deferred: Windows/Linux bundling, app icons and Developer ID signing (see Stretch Goals),
+        and the web target.</li>
+      <li>Reviewer: check that every <code>// @snip</code> has a matching <code>// @end</code>
+        (<code>build.py</code> asserts it), and that <code>examples/ex5_tests.rs</code> was
+        regenerated.</li>
+    </ul>
+  </div>
+</section>
+
+<!-- ───────────────────────────── APPENDIX ───────────────────────────── -->
+<section id="know">
+  <p class="kicker">What you should know now</p>
+  <div class="spread">
+    <div>
+      <h3>You can now do, unaided</h3>
+      <ul>
+        <li>Turn a folder of Rust source into a standalone executable, say where cargo put it, and
+          explain why it runs on a machine without Rust.</li>
+        <li>Wrap that executable into a signed <code>.app</code> by hand, and read any
+          <code>.app</code>'s <code>Info.plist</code> to see what it runs.</li>
+        <li>Build a screen from state with rows, columns and keys, and predict which elements will
+          travel and which will swap in place.</li>
+        <li>Choose a spring or a transition by feel, and explain why a spring survives a double
+          tap.</li>
+        <li>Write a headless test that drags an element and asserts on both state and pixels.</li>
+        <li>Add a GPU effect to a view by reserving a slot and feeding it four numbers.</li>
+      </ul>
+    </div>
+    <div>
+      <h3>Now true about this codebase</h3>
+      <ul>
+        <li>Every file in <code>tutorial/src/bin/</code> is its own program, and
+          <code>rune_tutorial::gfx</code> is the only shared code.</li>
+        <li>The compositor's marks table (<code>FIRE = 1</code>, <code>LENS = 2</code>,
+          <code>SHOCK = 3</code>) is the contract between views and effects. Adding an effect means
+          a new mark and a new <code>layer</code> arm, and nothing in the views.</li>
+        <li>Every snippet on this page is extracted from code that compiles. Edit the
+          <code>.rs</code>, not the HTML.</li>
+      </ul>
+      <h3>Check yourself</h3>
+      <ol class="quiz">
+        <li>A friend's copy of your <code>.app</code> opens, but on their Intel Mac it says "bad CPU
+          type". What did you build for, and what would you change?</li>
+        <li>A list reorder looks like the text "flickers" instead of rows moving. What's your first
+          grep?</li>
+        <li>A progress ring you added makes the laptop fan spin even when idle. Which function do
+          you open first?</li>
+      </ol>
+    </div>
+  </div>
+</section>
+
+<section id="stretch">
+  <p class="kicker">Stretch goals</p>
+  <div class="one">
+    <p><b>A real icon and a name in Finder.</b> Today's bundle shows the generic app icon, and
+      macOS treats each ad-hoc rebuild as a new app, so it forgets permissions.</p>
+    <blockquote class="note"><b>Copy this prompt</b>In the repo mite404/rune-experiments,
+      <code>tutorial/scripts/bundle-mac.sh</code> wraps a Rune binary (pinned rev 6231f17) into a
+      minimal ad-hoc-signed <code>.app</code> with no icon. Write a tutorial (create-tutorial skill)
+      that adds an <code>.icns</code> icon made from a 1024 px PNG with <code>iconutil</code>,
+      switches to Rune's <code>scripts/mac-app</code> for relaunch, and signs with a Developer ID
+      through <code>MAC_APP_SIGN</code>. Verify on a Mac.</blockquote>
+    <p><b>Write your own effect.</b> <code>gfx.rs</code> only maps three rune-fx effects. rune-fx
+      also has glow, sparkles, electric borders, mesh gradients and voronoi.</p>
+    <blockquote class="note"><b>Copy this prompt</b>In mite404/rune-experiments,
+      <code>tutorial/src/gfx.rs</code> maps effect-slot marks (<code>FIRE</code>, <code>LENS</code>,
+      <code>SHOCK</code>) to rune-fx layers in a <code>layer()</code> calculation. Write a tutorial
+      that adds a <code>SPARKLES</code> mark (burst on press) and a <code>GLOW</code> mark, with a
+      small app that uses both, verified on Metal with headless <code>--video</code> recordings.
+      Reference: Rune's <code>examples/showreel/src/gfx.rs</code> at rev 6231f17.</blockquote>
+    <p><b>Persist state.</b> Every lesson forgets everything on quit.</p>
+    <blockquote class="note"><b>Copy this prompt</b>In mite404/rune-experiments,
+      <code>tutorial/src/bin/l2_queue.rs</code> keeps its queue only in memory. Write a tutorial
+      that saves the queue order to a file in the user's app-support folder on change and loads it
+      in <code>init</code>, using Rune's <code>rune::dirs</code>/<code>prefs</code> modules if they
+      fit (rev 6231f17), with the file I/O injected so a test can use a temp dir.</blockquote>
+  </div>
+</section>
+
+<section id="alternates">
+  <p class="kicker">Advanced techniques &amp; alternate solutions</p>
+  <div class="one">
+    <h4>Bundling: <code>cargo-bundle</code> or Rune's <code>scripts/mac-app</code></h4>
+<pre class="shell">cargo install cargo-bundle     # reads [package.metadata.bundle] from Cargo.toml
+cargo bundle --release --bin l2_queue</pre>
+    <p>It wins when you ship to several platforms (it also makes <code>.deb</code> and
+      <code>.msi</code>) and want the metadata in <code>Cargo.toml</code>. Rune's
+      <code>scripts/mac-app</code> wins on a Mac you're iterating on: it relaunches without the
+      window blinking and keeps permissions. Our 20-line script is <i>worse</i> for shipping but
+      better for learning, because there's nothing in it you can't read. The crossover is the first
+      time you need an icon.</p>
+    <h4>Animating by hand from <code>poll</code></h4>
+<pre class="shell">fn poll(s: &amp;mut State, now: f64, _: &amp;mut Tx) -&gt; bool {
+    s.x += (target(s) - s.x) * 0.2;   // a hand-rolled ease, every frame
+    true
+}</pre>
+    <p>Worse here: it ties motion to frame rate, loses velocity on retarget, and rebuilds the view
+      every frame. It wins when the motion <i>is</i> the content, like a physics toy or a game
+      loop, where you need full control of every step. The falling todo in the repo's own
+      "floor is lava" experiment does exactly this. It also has to call <code>tx.instant()</code>
+      in <code>poll</code>, because Rune would otherwise spring-smooth every keyed position it
+      sets by hand.</p>
+    <h4>Keeping decisions in handlers</h4>
+    <p>For a two-line app with no tests, an inline <code>if</code> in the handler is fine, and
+      extracting <code>release</code> would be ceremony. The crossover is the first time you want
+      to test the rule, or a second gesture (a keyboard shortcut, say) needs the same decision.</p>
+    <h4>Considered and rejected for this page: the web build</h4>
+    <p>Rune can target one WebGPU canvas, which would make these examples interactive in the page.
+      When we tried it, Chrome and Helium clipped the canvas and dropped the effects. Recordings of
+      the real native build were the approach we could verify end to end.</p>
+  </div>
+</section>
+
+<section id="reference">
+  <p class="kicker">Reference</p>
+  <div class="spread">
+    <div>
+      <h3>Common patterns</h3>
+      <ul>
+        <li>Calculation returns new data → handler assigns it (<code>s.queue = play_next(&amp;s.queue, id)</code>).</li>
+        <li>Key by identity: <code>.key(format!("track-{}", track.id))</code>.</li>
+        <li>Drag: <code>Move</code> sets an offset, and <code>Up</code> asks a calculation and applies its answer.</li>
+        <li>Time: <code>poll</code> copies <code>now</code>, and handlers store start times.</li>
+        <li>Effect: <code>rune::effect(MARK).effect_data([..]).absolute(..).size(..)</code>, plus <code>run_with</code>.</li>
+      </ul>
+      <h3>Key takeaways</h3>
+      <ul>
+        <li><code>target/release/&lt;name&gt;</code> is the program, and a <code>.app</code> is a folder around it.</li>
+        <li>The view is a calculation by type, and the compiler keeps it pure.</li>
+        <li>Motion is a property (a spring), never a script.</li>
+        <li>Inject the clock and the pointer, and everything becomes testable.</li>
+      </ul>
+    </div>
+    <div>
+      <h3>Troubleshooting</h3>
+      <p><b>Problem:</b> <code>error[E0599]: no method named … for struct El</code>.<br>
+        <b>Solution:</b> rev drift, or a typo. Check the drift check, then the method list in
+        Rune's <code>crates/rune/README.md</code> at the pinned rev.</p>
+      <p><b>Problem:</b> the first build fails while compiling <code>objc2</code> or
+        <code>metal</code>.<br><b>Solution:</b> run <code>xcode-select --install</code>
+        (Command Line Tools).</p>
+      <p><b>Problem:</b> <code>--video</code> fails at once.<br><b>Solution:</b> ffmpeg isn't on
+        <code>PATH</code> (<code>brew install ffmpeg</code>).</p>
+      <p><b>Problem:</b> text sits under the traffic lights.<br><b>Solution:</b> windows draw
+        under the titlebar, so add <code>.pt(40.0)</code> to your root column.</p>
+      <p><b>Problem:</b> springs snap instantly in a window but glide in headless recordings.<br>
+        <b>Solution:</b> macOS Reduce Motion is on (System Settings → Accessibility → Display).
+        Rune honours it by snapping travel to a short fade. Headless runs don't read it.</p>
+      <p><b>Problem:</b> a dark box trails a glass shape.<br><b>Solution:</b> the lens shadow,
+        so set <code>shadow: 0.0</code> in its <code>LensParams</code>.</p>
+    </div>
+  </div>
+  <h3>Full reference implementation</h3>
+  <details><summary>Lesson 1 · <code>src/bin/l1_switch.rs</code></summary>{{snip:l1}}</details>
+  <details><summary>Lesson 2 · <code>src/bin/l2_queue.rs</code></summary>{{snip:l2}}</details>
+  <details><summary>Lesson 3 · <code>src/bin/l3_springs.rs</code></summary>{{snip:l3}}</details>
+  <details><summary>Lessons 4 &amp; 5 · <code>src/bin/l4_swipe.rs</code></summary>{{snip:l4}}{{snip:l5}}</details>
+  <details><summary>Lesson 6 · <code>src/bin/l6_fire.rs</code></summary>{{snip:l6}}</details>
+  <details><summary>Lesson 7 · <code>src/bin/l7_glass.rs</code></summary>{{snip:l7}}</details>
+  <details><summary>Lesson 8 · <code>src/bin/l8_shock.rs</code></summary>{{snip:l8}}</details>
+  <details><summary>Compositor · <code>src/gfx.rs</code> (marks + layer)</summary>{{snip:marks}}{{snip:layer}}</details>
+</section>
+
+<p class="end">End of Tutorial</p>
+</div>
+</body>
+</html>
