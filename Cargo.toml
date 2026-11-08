@@ -1,0 +1,26 @@
+[package]
+name = "rune-experiments"
+version = "0.0.1"
+edition = "2024"
+license = "MIT"
+publish = false
+
+[[bin]]
+name = "rune-experiments"
+path = "src/main.rs"
+
+# Pinned to a `dev` rev of anomalyco/rune; `dev` is never rewritten.
+[dependencies]
+rune = { git = "https://github.com/anomalyco/rune", rev = "6231f1753432550c72f0cd52dab3a08612ce4162" }
+rune-fx = { git = "https://github.com/anomalyco/rune", rev = "6231f1753432550c72f0cd52dab3a08612ce4162" }
+wgpu = { version = "30", default-features = false, features = ["std", "parking_lot", "metal", "wgsl"] }
+
+[target.'cfg(not(target_os = "macos"))'.dependencies]
+wgpu = { version = "30", default-features = false, features = ["vulkan", "dx12"] }
+
+[profile.dev.package."*"]
+debug = false
+
+[profile.release]
+codegen-units = 16
+incremental = true

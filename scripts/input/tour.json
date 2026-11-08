@@ -1,0 +1,12 @@
+{"events": [
+  {"t": 0.6, "type": "tap", "key": "lava-todo"},
+  {"t": 1.4, "type": "drag", "key": "todo-1", "dx": 30, "dy": 260, "dur": 0.8},
+  {"t": 4.0, "type": "key", "name": "Escape"},
+  {"t": 4.6, "type": "tap", "key": "hold-confirm"},
+  {"t": 5.2, "type": "down", "x": 480, "y": 366},
+  {"t": 7.0, "type": "up", "x": 480, "y": 366},
+  {"t": 8.6, "type": "tap", "key": "back"},
+  {"t": 9.2, "type": "tap", "key": "goo-tabs"},
+  {"t": 9.8, "type": "tap", "key": "tab-2"},
+  {"t": 11.4, "type": "mark", "name": "end"}
+]}
