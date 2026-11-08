@@ -1,0 +1,1 @@
+{"events":[{"t":0.4,"type":"drag","key":"card-1","dx":70,"dy":0,"dur":0.5},{"t":1.6,"type":"drag","key":"card-1","dx":-200,"dy":0,"dur":0.4},{"t":2.8,"type":"drag","key":"card-3","dx":220,"dy":0,"dur":0.4},{"t":4.0,"type":"mark","name":"end"}]}

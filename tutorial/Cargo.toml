@@ -1,0 +1,17 @@
+[package]
+name = "rune-tutorial"
+version = "0.1.0"
+edition = "2024"
+publish = false
+
+[dependencies]
+rune = { git = "https://github.com/anomalyco/rune", rev = "6231f1753432550c72f0cd52dab3a08612ce4162" }
+rune-fx = { git = "https://github.com/anomalyco/rune", rev = "6231f1753432550c72f0cd52dab3a08612ce4162" }
+wgpu = { version = "30", default-features = false, features = ["std", "parking_lot", "metal", "wgsl"] }
+
+[target.'cfg(not(target_os = "macos"))'.dependencies]
+wgpu = { version = "30", default-features = false, features = ["vulkan", "dx12"] }
+
+[profile.dev.package."*"]
+opt-level = 2
+debug = false
