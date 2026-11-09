@@ -4,7 +4,7 @@
 // @snip:ex2
 // ── 1. IMPORTS ──────────────────────────────────────────────
 use rune::tok::{self, Theme, motion, radius, type_};
-use rune::{AppSpec, Cx, El, col, row, text};
+use rune::{AppSpec, Cx, El};
 
 // ── 2. DATA ─────────────────────────────────────────────────
 #[derive(Clone, Copy)]
@@ -29,8 +29,15 @@ const TRACKS: [(&str, &str, &str); 5] = [
 
 impl Default for State {
     fn default() -> Self {
-        let queue = TRACKS.iter().zip(0..)
-            .map(|(&(title, artist, length), id)| Track { id, title, artist, length })
+        let queue = TRACKS
+            .iter()
+            .zip(0..)
+            .map(|(&(title, artist, length), id)| Track {
+                id,
+                title,
+                artist,
+                length,
+            })
             .collect(); // → Vec<Track>
         State { queue }
     }
@@ -38,49 +45,78 @@ impl Default for State {
 
 // ── 3. CALCULATION ──────────────────────────────────────────
 // CATEGORY: Calculation - a queue and an id in, a NEW queue out. No mutation.
-fn play_next(queue: &[Track], id: u32) -> Vec<Track> { // in: &[Track], u32 → out: Vec<Track>
+fn play_next(queue: &[Track], id: u32) -> Vec<Track> {
+    // in: &[Track], u32 → out: Vec<Track>
     // TODO(you) 1: put the track with `id` first and keep everyone else in their order.
     //   You can't mutate `queue` (it's borrowed, not owned). Which iterator adapters let you
     //   pick "the one" and "the rest" as two passes over the same slice, then join them?
-    //   What does `Track` need to derive so you can turn `&Track` back into `Track`?
+    //   Which derive on `Track` lets `.copied()` turn `&Track` back into `Track`?
     let _ = (queue, id);
     todo!() // remove when implemented
 }
 
 // CATEGORY: Calculation - one track in, one row of elements out.
-fn track_row(track: &Track, t: Theme) -> El { // in: &Track, Theme → out: El
+fn track_row(track: &Track, theme: Theme) -> El {
+    // in: &Track, Theme → out: El
     let id = track.id;
     // TODO(you) 2: title above artist. Which builder stacks children vertically? It must also
     //   take all the spare width so the length and button get pushed to the right edge -
     //   which flex property does that in CSS, and what is it called here?
     let words: El = todo!(); // remove when implemented
-    let button = row().key("next").h(26.0).px(10.0).radius(13.0).center()
-        .fill(t.control_off)
-        .child(text("Play next").font(type_::LABEL).color(t.text))
-        .on_press(move |s: &mut State| s.queue = play_next(&s.queue, id));
-    row().h(52.0).px(14.0).gap(12.0).center_y().radius(radius::LG).fill(t.card)
+    let button = rune::row()
+        .key("next")
+        .h(26.0)
+        .px(10.0)
+        .radius(13.0)
+        .center()
+        .fill(theme.control_off)
+        .child(rune::text("Play next").font(type_::LABEL).color(theme.text))
+        .on_press(move |state: &mut State| state.queue = play_next(&state.queue, id));
+    rune::row()
+        .h(52.0)
+        .px(14.0)
+        .gap(12.0)
+        .center_y()
+        .radius(radius::LG)
+        .fill(theme.card)
         .child(words)
-        .child(text(track.length).font(type_::LABEL).color(t.text_secondary))
+        .child(
+            rune::text(track.length)
+                .font(type_::LABEL)
+                .color(theme.text_secondary),
+        )
         .child(button)
 }
 
-fn view(s: &State, _: &mut Cx<State>) -> El {
-    let t = tok::theme(true);
-    let mut list = col().gap(6.0);
-    for track in &s.queue {
+fn view(state: &State, _: &mut Cx<State>) -> El {
+    let theme = tok::theme(true);
+    let mut list = rune::col().gap(6.0);
+    for track in &state.queue {
         // TODO(you) 3: give every row an identity that survives reordering. What is stable
         //   about a track that its position in the list is not? Try it with the row's index
+        //   (`.iter().enumerate()` and `format!("row-{i}")`)
         //   first, press "Play next", and watch what moves. Then fix it.
-        list = list.child(track_row(track, t));
+        list = list.child(track_row(track, theme));
     }
-    col().w_full().h_full().padding(20.0).pt(40.0).gap(14.0).fill(t.bg)
+    rune::col()
+        .w_full()
+        .h_full()
+        .padding(20.0)
+        .pt(40.0)
+        .gap(14.0)
+        .fill(theme.bg)
         .motion(motion::SMOOTH)
-        .child(text("Up next").font(type_::TITLE).color(t.text))
+        .child(rune::text("Up next").font(type_::TITLE).color(theme.text))
         .child(list)
 }
 
 // ── 5. MAIN ─────────────────────────────────────────────────
 fn main() {
-    rune::run(AppSpec::new("Exercise 2 - Up next", (420.0, 400.0), State::default, view));
+    rune::run(AppSpec::new(
+        "Exercise 2 - Up next",
+        (420.0, 400.0),
+        State::default,
+        view,
+    ));
 }
 // @end

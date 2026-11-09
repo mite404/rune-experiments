@@ -753,7 +753,7 @@ scripts/bundle-mac.sh l2_queue "Up Next" &amp;&amp; open "dist/Up Next.app"</pre
         stage left, exit through the trapdoor.</p>
       <p><b>What is it?</b> An element that appears or disappears between two views has
         <b>presence</b>. <code>.transition(..)</code> says how it enters and exits.
-        <code>Transition::offset(0, 10).combined(Transition::opacity())</code> rises and fades.
+        <code>Transition::offset(0.0, 10.0).combined(Transition::opacity())</code> rises and fades.
         <code>Transition::asymmetric(enter, exit)</code> uses different moves for each (Lesson 4).
         Exiting elements stay drawn until their exit finishes, so you just delete them from the
         state.</p>
@@ -1040,7 +1040,7 @@ test result: ok. 3 passed; 0 failed; … finished in 0.02s</pre>
     <h2>Liquid glass</h2>
     <p class="deck">A glass pill that bends the stripes behind it, and a drop you can pull out
       that clings like water.</p></div></div>
-  <details class="terms" open><summary>Terms in this lesson</summary><dl><dt>Backdrop</dt><dd><b>In general:</b> Whatever is already behind a thing.<br><b>In Rust:</b> A copy of the frame drawn so far, which Rune hands to a slot marked <code>.effect_backdrop(true)</code>.</dd><dt>Signed distance field / smooth union</dt><dd><b>In general:</b> Describing a shape by "how far is this point from the edge", which lets two shapes blend like liquid.<br><b>In Rust:</b> Inside rune-fx's shaders. You only pass shapes (<code>Shape::circle</code>, <code>Shape::rounded</code>) and a blend radius (<code>union_k</code>).</dd><dt>Transaction (<code>Tx</code>)</dt><dd><b>In general:</b> One batch of changes applied together.<br><b>In Rust:</b> <code>&amp;mut Tx</code> comes into handlers. <code>tx.instant()</code> says to land this batch with no spring.</dd><dt>Tuple field</dt><dd><b>In general:</b> Getting at the parts of a pair.<br><b>In Rust:</b> <code>pull: (f32, f32)</code>, read as <code>pull.0</code> / <code>pull.1</code>, or destructured with <code>let (x, y) = pull;</code>.</dd></dl></details>
+  <details class="terms" open><summary>Terms in this lesson</summary><dl><dt>Backdrop</dt><dd><b>In general:</b> Whatever is already behind a thing.<br><b>In Rust:</b> A copy of the frame drawn so far, which Rune hands to a slot marked <code>.effect_backdrop(true)</code>.</dd><dt>Signed distance field / smooth union</dt><dd><b>In general:</b> Describing a shape by "how far is this point from the edge", which lets two shapes blend like liquid.<br><b>In Rust:</b> Inside rune-fx's shaders. You only pass shapes (<code>Shape::circle</code>, <code>Shape::rounded</code>) and a blend radius (<code>union_k</code>).</dd><dt>Transaction (<code>Tx</code>)</dt><dd><b>In general:</b> One batch of changes applied together.<br><b>In Rust:</b> <code>&amp;mut Tx</code> comes into handlers. <code>tx.instant()</code> says to land this batch with no spring. Drag moves are already instant.</dd><dt>Named fields over tuples</dt><dd><b>In general:</b> Labelling the parts of a value instead of numbering them.<br><b>In Rust:</b> <code>PILL.width</code> reads better than <code>PILL.2</code>, so the lessons use a small <code>struct Rect</code> instead of a 4-tuple (Google's Rust style guide asks for this).</dd></dl></details>
   <div class="spread">
     <div>
       <h3>Concept: effects that read the backdrop</h3>
@@ -1055,9 +1055,11 @@ test result: ok. 3 passed; 0 failed; … finished in 0.02s</pre>
         that makes metaballs.</p>
       <p><b>Why?</b> A backdrop read costs a pause and a copy, so it's opt-in per slot. Ordinary
         slots never pay for it.</p>
-      <p><code>tx.instant()</code> inside the <code>Move</code> arm lands the drag change without
-        a spring. This handler moves the <i>effect's data</i>, not an element with drag-follow
-        built in, so you say it yourself.</p>
+      <p><b>Effect data doesn't spring.</b> Rune animates element properties (position, size,
+        colour), but <code>.effect_data([..])</code> is four raw numbers passed straight to the
+        shader. Drag moves already land instantly (as in Lesson 4), and on release the drop
+        <i>jumps</i> home. To make it glide you'd animate the numbers yourself from
+        <code>poll</code>, which is Lesson 8's technique.</p>
       <div class="note"><b>Gotcha we hit</b>rune-fx's lens draws a drop shadow by default, and the
         shadow follows the goo: a dark rectangle trails the drop. <code>gfx.rs</code> sets
         <code>shadow: 0.0</code>. It only showed in a live window, not in still snaps.</div>
@@ -1065,31 +1067,31 @@ test result: ok. 3 passed; 0 failed; … finished in 0.02s</pre>
     <div class="fig">
       <figure>{{video:l7_glass.mp4}}<figcaption><b>Pulled down, then sideways.</b> Close to the
         pill the drop and glass stay joined by a liquid neck, they split as it moves away, and on
-        release the drop springs home and fuses back in.</figcaption></figure>
+        release the drop jumps straight home and fuses back in.</figcaption></figure>
       {{snip:ex7}}
     </div>
   </div>
   <h3>Step 7.2 · Work through it</h3>
-  <p>Four TODOs. For TODO 3, try it without <code>tx.instant()</code> first and describe what you
-    feel. That's the negative space for this lesson.</p>
+  <p>Four TODOs. TODO 4 is a prediction: write down "glide" or "jump" before you run it.
+    That's the negative space for this lesson: not everything you put in a view springs.</p>
   <h3>Step 7.3 · Quiz yourself</h3>
   <ol class="quiz">
     <li>Move <code>.child(glass)</code> above <code>.child(stripes())</code>. What does the lens
       show, and why?</li>
-    <li>On release, <code>pull</code> becomes <code>(0, 0)</code>. What makes the drop
-      <i>spring</i> home rather than teleport?</li>
+    <li>On release, the pull goes back to zero. Why does the drop <i>jump</i> home instead of springing
+      like Lesson 4's cards?</li>
   </ol>
   <details><summary>✅ Solution (consult after your attempt)</summary>
     <p>Quiz: (1) Just the plain background. The backdrop is only what was drawn <i>before</i> the
-      slot. (2) The <code>Up</code> commit isn't instant, so the handle element springs on its
-      default motion, and the slot's data follows the view, which the runtime re-runs while the
-      spring is in flight.</p>
+      slot. (2) The cards' <code>.offset</code> is an element property with a spring track. The
+      drop's position lives in <code>effect_data</code>, raw numbers copied to the shader once per
+      view, so nothing animates them.</p>
   </details>
   <h3>Step 7.4 · Run it</h3>
 <pre class="shell">cargo run --release --example ex7_glass</pre>
   <p><b>Expected output:</b> bent stripes inside the pill, and a drop that stretches out with a
-    neck, snaps free, and springs home. <b>If it fails:</b> a flat dark pill means no backdrop
-    flag. A drop that lags your pointer: no <code>instant</code>.</p>
+    neck, snaps free, and jumps home on release. <b>If it fails:</b> a flat dark pill means no backdrop
+    flag. A drop that doesn't move: <code>Move</code> isn't setting both pulls.</p>
     <h3>Idiot check · the finished code</h3>
   <p>The complete answer for this lesson. Diff it against your file line by line. Your names and order may differ, but the behaviour shouldn't.</p>
   {{snip:l7}}
@@ -1115,7 +1117,7 @@ test result: ok. 3 passed; 0 failed; … finished in 0.02s</pre>
         current time. It's an <b>Action</b> (it depends on when it runs), and it's the only place
         your app touches the clock. Copy <code>now</code> into the state there. The handler records
         <code>fired_at = s.now</code>, and the shader gets <code>fired_at</code> and computes the
-        ring's radius itself from the compositor's own time.</p>
+        ring's radius itself from the compositor's time. Strictly, that's Rune's <i>animation</i> clock, while <code>poll</code> gets wall time. They match while frames keep coming (which is why <code>poll</code> asks for them), but can drift if the window sits hidden for a long time.</p>
       <p><b>Teach by negative space:</b> the tempting design is a <code>progress: f32</code> that
         <code>poll</code> nudges up every frame. It drifts if a frame is skipped, it needs a "done"
         flag, and it forces the view to rebuild 60 times a second. A start time is one number,

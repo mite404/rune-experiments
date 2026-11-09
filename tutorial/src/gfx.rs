@@ -64,7 +64,9 @@ pub struct Gfx {
 
 impl<S: 'static> Compositor<S> for Gfx {
     fn animating(&self) -> bool {
-        true // fire and shockwaves move on their own, so keep drawing frames
+        // Fire and shockwaves move on their own, so keep drawing frames.
+        // ponytail: always true, so lessons with nothing moving still redraw; track live slots if battery matters.
+        true
     }
 
     fn render(&mut self, f: &mut Frame<'_, S>) {
@@ -87,7 +89,9 @@ impl<S: 'static> Compositor<S> for Gfx {
                 continue;
             }
             let r = i.radii.iter().fold(0.0f32, |a, v| a.max(v.abs())) / k;
-            let Some(l) = layer(mark, i.uv, Shape::rounded(x, y, w, h, r), t) else { continue };
+            let Some(l) = layer(mark, i.uv, Shape::rounded(x, y, w, h, r), t) else {
+                continue;
+            };
             fire |= mark == FIRE;
             at.push(n as u32);
             layers.push(l);
@@ -100,23 +104,36 @@ impl<S: 'static> Compositor<S> for Gfx {
         });
         fx.set_srgb_blend(f.srgb_blend());
         fx.add_format(device, wgpu::TextureFormat::Rgba16Float);
-        let frame = FxFrame { viewport: [size.0, size.1], scale: 1.0, layers: &layers, backdrop: None, sources: &[] };
+        let frame = FxFrame {
+            viewport: [size.0, size.1],
+            scale: 1.0,
+            layers: &layers,
+            backdrop: None,
+            sources: &[],
+        };
         fx.prepare_with_slots(device, queue, &frame, &slots);
         if fire {
             fx.simulate(queue, f.encoder, None);
         }
         let clear = f.rt.clear_color();
         f.ui.prepare(device, queue, &mut f.rt.text.atlas, &f.rt.instances, size);
-        f.ui.draw_with_backdrop(f.encoder, f.target, clear, &mut |phase, s: &EffectSite<'_>| {
-            let Some(k) = at.iter().position(|n| *n == s.index) else { return };
-            match phase {
-                EffectPhase::Backdrop(enc) => {
-                    if let Some(bd) = s.backdrop {
-                        fx.blur_backdrop(device, queue, enc, bd, k);
+        f.ui.draw_with_backdrop(
+            f.encoder,
+            f.target,
+            clear,
+            &mut |phase, s: &EffectSite<'_>| {
+                let Some(k) = at.iter().position(|n| *n == s.index) else {
+                    return;
+                };
+                match phase {
+                    EffectPhase::Backdrop(enc) => {
+                        if let Some(bd) = s.backdrop {
+                            fx.blur_backdrop(device, queue, enc, bd, k);
+                        }
                     }
+                    EffectPhase::Draw(pass) => fx.draw_layer_in(pass, s.format, s.origin, k),
                 }
-                EffectPhase::Draw(pass) => fx.draw_layer_in(pass, s.format, s.origin, k),
-            }
-        });
+            },
+        );
     }
 }
