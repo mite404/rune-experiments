@@ -98,6 +98,10 @@
   .end { text-align: center; font: 700 13px/1 var(--sans); letter-spacing: .3em; text-transform: uppercase;
     padding: 48px 0 80px; }
 
+  .terms { background: #fff8ec; }
+  .terms dl { margin: 0 0 8px; font: 14.5px/1.55 var(--sans); }
+  .terms dt { font-weight: 700; margin-top: 10px; }
+  .terms dd { margin: 2px 0 0 0; }
   @media (max-width: 900px) {
     .cover, .spread { grid-template-columns: minmax(0, 1fr); }
     .spread > .fig { position: static; }
@@ -419,6 +423,7 @@ wgpu = { version = "30", default-features = false, features = ["vulkan", "dx12"]
     <h2>Compile your first app</h2>
     <p class="deck">A light switch, and the trip it takes from a <code>.rs</code> file to a program
       your Mac can run.</p></div></div>
+  <details class="terms" open><summary>Terms in this lesson</summary><dl><dt>Compile</dt><dd><b>In general:</b> Translate source code into instructions a CPU runs directly, before the program runs.<br><b>In Rust:</b> <code>cargo build</code> runs <code>rustc</code> on your crate and every dependency. Nothing runs until the whole program type-checks and borrow-checks.</dd><dt>Crate</dt><dd><b>In general:</b> A package or library: a bundle of code you publish or depend on, like an npm package.<br><b>In Rust:</b> The unit Rust compiles in one go. <code>rune</code> is a crate, your <code>tutorial/</code> package is a crate, and each file in <code>src/bin/</code> is its own small binary crate.</dd><dt>Binary / executable</dt><dd><b>In general:</b> A file of machine code the operating system can launch.<br><b>In Rust:</b> What <code>cargo build</code> writes to <code>target/&lt;profile&gt;/&lt;name&gt;</code>. A Rust binary carries all its Rust dependencies inside it.</dd><dt>Link</dt><dd><b>In general:</b> The step that glues separately compiled pieces into one finished program.<br><b>In Rust:</b> After every crate compiles, the linker joins them into one file and records the system frameworks it needs (AppKit, Metal).</dd><dt>Profile (debug / release)</dt><dd><b>In general:</b> A preset of compiler settings for a build.<br><b>In Rust:</b> <code>dev</code> (debug) compiles fast and runs slow. <code>release</code> optimizes. They're set in <code>[profile.*]</code> in <code>Cargo.toml</code> and write to different folders.</dd><dt>Struct</dt><dd><b>In general:</b> A record type: named fields grouped together, like a JS object with a fixed shape.<br><b>In Rust:</b> <code>struct State { on: bool }</code>. <code>#[derive(Default)]</code> asks the compiler to write a constructor that gives every field its zero value.</dd><dt>Borrow (<code>&amp;T</code> / <code>&amp;mut T</code>)</dt><dd><b>In general:</b> Using a value without taking ownership of it, like lending a book.<br><b>In Rust:</b> <code>&amp;State</code> is a shared, read-only borrow, and many can exist at once. <code>&amp;mut State</code> is exclusive and can change it. The compiler enforces this, which is why <code>view</code> can't modify state.</dd><dt>Closure</dt><dd><b>In general:</b> A function you write inline that can use variables from around it.<br><b>In Rust:</b> <code>|s: &amp;mut State| s.on = !s.on</code>. Rust picks how it captures surrounding variables: by reference, by mutable reference, or by value with <code>move</code>.</dd><dt>Pure function</dt><dd><b>In general:</b> Same input gives the same output, with no side effects.<br><b>In Rust:</b> The tutorial calls these Calculations. Any <code>fn</code> that only takes <code>&amp;T</code> or owned values and touches nothing global behaves this way.</dd></dl></details>
 
   <div class="spread">
     <div>
@@ -569,7 +574,10 @@ $ ./target/release/l1_switch --snap on.png --scene on</pre>
     flips and springs when you click it or press Space after Tab. <b>If it fails:</b>
     <code>error: no bin target named</code> means you're not in <code>tutorial/</code>. A compile error
     inside <code>rune</code> means your rev isn't <code>6231f17</code> (see the drift check).</p>
-  <p><b>✅ Lesson 1 complete. You've learned:</b> what cargo builds and where, debug vs release,
+    <h3>Idiot check · the finished code</h3>
+  <p>The complete answer for this lesson. Diff it against your file line by line. Your names and order may differ, but the behaviour shouldn't.</p>
+  {{snip:l1}}
+<p><b>✅ Lesson 1 complete. You've learned:</b> what cargo builds and where, debug vs release,
     that a Rust binary stands alone, and the state → view → handler loop. <b>Next:</b> lay out a
     list, give rows identities, and turn the binary into a real Mac app.</p>
 </section>
@@ -581,6 +589,7 @@ $ ./target/release/l1_switch --snap on.png --scene on</pre>
     <h2>Layout, keys, and a real <code>.app</code></h2>
     <p class="deck">A music queue whose rows slide to their new places, shipped as an app with a
       name in the menu bar.</p></div></div>
+  <details class="terms" open><summary>Terms in this lesson</summary><dl><dt>Flexbox</dt><dd><b>In general:</b> A layout model where a container lines its children up in a row or column and shares out the spare space.<br><b>In Rust:</b> Rune runs the Taffy crate, a Rust port of CSS flexbox. <code>row()</code> / <code>col()</code> set the direction, and <code>.grow(1.0)</code> is <code>flex-grow</code>.</dd><dt>Identity (key)</dt><dd><b>In general:</b> What makes "this" the same thing as "that" from one moment to the next.<br><b>In Rust:</b> A string you attach with <code>.key(..)</code>. Rune matches old and new element trees by key. In Rust code it's just a <code>String</code>, so build it from a field that never changes.</dd><dt>Slice (<code>&amp;[T]</code>)</dt><dd><b>In general:</b> A view of a run of items in a list, without owning or copying them.<br><b>In Rust:</b> <code>&amp;[Track]</code> borrows part or all of a <code>Vec&lt;Track&gt;</code>. Functions take slices so any list can be passed in.</dd><dt>Iterator</dt><dd><b>In general:</b> Something that hands you items one at a time.<br><b>In Rust:</b> A value implementing the <code>Iterator</code> trait. Adapters like <code>.filter</code>, <code>.chain</code> and <code>.copied</code> build a pipeline, and <code>.collect()</code> runs it into a <code>Vec</code>.</dd><dt>Derive / <code>Copy</code></dt><dd><b>In general:</b> Having the compiler write boilerplate for you.<br><b>In Rust:</b> <code>#[derive(Clone, Copy)]</code> lets a small struct be duplicated by a plain memory copy, so <code>.copied()</code> can turn <code>&amp;Track</code> into <code>Track</code>.</dd><dt><code>move</code> closure</dt><dd><b>In general:</b> A closure that takes its own copy of what it uses, instead of pointing back at it.<br><b>In Rust:</b> <code>move |s| ...</code> copies <code>id</code> into the closure, so the handler still works after this run of <code>view</code> ends.</dd><dt>Bundle / code signing</dt><dd><b>In general:</b> Packaging a program with its metadata, and stamping it so the OS knows it hasn't been tampered with.<br><b>In Rust:</b> Not Rust-specific. A <code>.app</code> is a folder around the cargo binary, and <code>codesign</code> signs it.</dd></dl></details>
 
   <div class="spread">
     <div>
@@ -644,7 +653,6 @@ $ ./target/release/l1_switch --snap on.png --scene on</pre>
     <li>Two tracks with the same <code>id</code>: what goes wrong on screen?</li>
   </ol>
   <details><summary>✅ Solution (consult after your attempt)</summary>
-    {{snip:l2}}
     <p><b>Why this works:</b> the view re-runs with the new order, and the keys let Rune see that
       the same five rows moved rather than five rows changing text.</p>
     <p><b>Why split it this way?</b></p>
@@ -710,7 +718,10 @@ scripts/bundle-mac.sh l2_queue "Up Next" &amp;&amp; open "dist/Up Next.app"</pre
     <code>ex2_queue.rs</code> points at the first unfinished <code>todo!()</code>.
     <code>no target/release/l2_queue</code> from the script means you skipped the build. macOS says
     the app "is damaged": the signing step failed, so check <code>codesign -h</code>.</p>
-  <p><b>✅ Lesson 2 complete. You've learned:</b> flex rows and columns, why keys must come from
+    <h3>Idiot check · the finished code</h3>
+  <p>The complete answer for this lesson. Diff it against your file line by line. Your names and order may differ, but the behaviour shouldn't.</p>
+  {{snip:l2}}
+<p><b>✅ Lesson 2 complete. You've learned:</b> flex rows and columns, why keys must come from
     identity rather than position, and what's inside a Mac app. <b>Next:</b> take control of the
     motion itself.</p>
 </section>
@@ -722,6 +733,7 @@ scripts/bundle-mac.sh l2_queue "Up Next" &amp;&amp; open "dist/Up Next.app"</pre
     <h2>Springs and transitions</h2>
     <p class="deck">Three balls, three springs, one target, plus a word that knows how to arrive
       and how to leave.</p></div></div>
+  <details class="terms" open><summary>Terms in this lesson</summary><dl><dt>Spring</dt><dd><b>In general:</b> A physics model that pulls a value toward a target and can overshoot and settle.<br><b>In Rust:</b> <code>rune::Spring</code>, a small <code>Copy</code> struct built with <code>Spring::new(duration, bounce)</code>. It's data you attach to an element, not a function you call.</dd><dt><code>const</code></dt><dd><b>In general:</b> A named value fixed when the program is written.<br><b>In Rust:</b> <code>const LANES: [(&amp;str, Spring); 3]</code> is computed at compile time and inlined wherever it's used. <code>Spring::new</code> is a <code>const fn</code>, so it's allowed here.</dd><dt>Array vs tuple</dt><dd><b>In general:</b> A fixed-length list of one type, vs a fixed group of mixed types.<br><b>In Rust:</b> <code>[T; 3]</code> is three <code>T</code>s. <code>(&amp;str, Spring)</code> is a pair. Both have their size in the type.</dd><dt>Presence / transition</dt><dd><b>In general:</b> How something animates when it appears and disappears.<br><b>In Rust:</b> <code>rune::Transition</code> values, attached with <code>.transition(..)</code>. Rune keeps a removed element drawn until its exit finishes.</dd><dt>Inheritance (in a tree)</dt><dd><b>In general:</b> Children take a setting from their parent unless they set their own.<br><b>In Rust:</b> Rune's <code>.motion(..)</code> flows down the element tree. This isn't Rust's type system, which has no class inheritance.</dd></dl></details>
   <div class="spread">
     <div>
       <h3>Concept: springs, not timelines</h3>
@@ -773,7 +785,6 @@ scripts/bundle-mac.sh l2_queue "Up Next" &amp;&amp; open "dist/Up Next.app"</pre
       <code>.opacity(if s.right {1.0} else {0.0})</code>. What's lost?</li>
   </ol>
   <details><summary>✅ Solution (consult after your attempt)</summary>
-    {{snip:l3}}
     <p><b>Why split it this way?</b> <code>ball_x</code> is a Calculation with a boundary worth
       naming (the far edge is <code>TRACK_W - BALL</code>). <code>lane</code> is a Calculation that
       builds one repeated piece. <code>LANES</code> is <b>Data</b>: making the springs a table, not
@@ -790,7 +801,10 @@ scripts/bundle-mac.sh l2_queue "Up Next" &amp;&amp; open "dist/Up Next.app"</pre
   <p><b>Expected output:</b> three lanes, and Go sends the balls across on visibly different
     curves. <b>If it fails:</b> the balls jump, so the spring isn't attached to the ball (TODO 3).
     The ball pokes out of its track: <code>ball_x</code> forgot the ball's own width.</p>
-  <p><b>✅ Lesson 3 complete. You've learned:</b> springs as properties, retargeting, and
+    <h3>Idiot check · the finished code</h3>
+  <p>The complete answer for this lesson. Diff it against your file line by line. Your names and order may differ, but the behaviour shouldn't.</p>
+  {{snip:l3}}
+<p><b>✅ Lesson 3 complete. You've learned:</b> springs as properties, retargeting, and
     presence transitions. <b>Next:</b> hand the motion to the user's finger.</p>
 </section>
 
@@ -801,6 +815,7 @@ scripts/bundle-mac.sh l2_queue "Up Next" &amp;&amp; open "dist/Up Next.app"</pre
     <h2>Drag</h2>
     <p class="deck">Swipe-to-archive notifications: they follow your finger exactly, and let go
       decides their fate.</p></div></div>
+  <details class="terms" open><summary>Terms in this lesson</summary><dl><dt>Enum</dt><dd><b>In general:</b> A type whose value is exactly one of a fixed list of options.<br><b>In Rust:</b> <code>enum Release { Archive, SnapBack }</code>. Rust enums can also carry data in each variant, like <code>Option&lt;T&gt;</code>.</dd><dt><code>match</code></dt><dd><b>In general:</b> Branching on the shape of a value.<br><b>In Rust:</b> The compiler forces you to handle every variant, so adding a third <code>Release</code> breaks the build until every <code>match</code> handles it.</dd><dt><code>Option</code> / <code>let ... else</code></dt><dd><b>In general:</b> "Maybe a value": either something or nothing.<br><b>In Rust:</b> <code>Option&lt;T&gt;</code> is <code>Some(t)</code> or <code>None</code>. <code>let Some(i) = ... else { return };</code> unwraps it or leaves the function early.</dd><dt>Gesture phase</dt><dd><b>In general:</b> The stages of one touch: press, move, release.<br><b>In Rust:</b> <code>rune::Phase::{Down, Move, Up}</code>, delivered in the <code>Drag</code> struct to your <code>on_drag</code> closure.</dd><dt>Threshold</dt><dd><b>In general:</b> The cut-off value where behaviour flips.<br><b>In Rust:</b> A plain <code>const THRESHOLD: f32</code>. Comparisons on <code>f32</code> use <code>&gt;=</code> and <code>.abs()</code>.</dd></dl></details>
   <div class="spread">
     <div>
       <h3>Concept: a gesture has phases</h3>
@@ -849,7 +864,6 @@ scripts/bundle-mac.sh l2_queue "Up Next" &amp;&amp; open "dist/Up Next.app"</pre
       What bug does that avoid?</li>
   </ol>
   <details><summary>✅ Solution (consult after your attempt)</summary>
-    {{snip:l4}}
     <p><b>Why split it this way?</b> <code>release</code> and <code>fade</code> are Calculations
       (numbers in, a value out). <code>Release</code> is Data: an enum names the two outcomes so a
       typo can't invent a third. The drag closure is the Action, and it never decides anything
@@ -864,7 +878,10 @@ scripts/bundle-mac.sh l2_queue "Up Next" &amp;&amp; open "dist/Up Next.app"</pre
   <p><b>Expected output:</b> cards track your pointer 1:1, a short pull springs back, and a long
     one flies off and the rest close the gap. <b>If it fails:</b> the card lags behind the pointer,
     so you put a spring on the drag. Nothing archives on a left swipe: the sign.</p>
-  <p><b>✅ Lesson 4 complete. You've learned:</b> gesture phases, offset vs layout, and keeping
+    <h3>Idiot check · the finished code</h3>
+  <p>The complete answer for this lesson. Diff it against your file line by line. Your names and order may differ, but the behaviour shouldn't.</p>
+  {{snip:l4}}
+<p><b>✅ Lesson 4 complete. You've learned:</b> gesture phases, offset vs layout, and keeping
     decisions out of handlers. <b>Next:</b> prove it works with no window and no mouse.</p>
 </section>
 
@@ -875,6 +892,7 @@ scripts/bundle-mac.sh l2_queue "Up Next" &amp;&amp; open "dist/Up Next.app"</pre
     <h2>Testing without a window</h2>
     <p class="deck">Drive Lesson 4 with a fake finger and a fake clock, and assert on both the
       state and the screen.</p></div></div>
+  <details class="terms" open><summary>Terms in this lesson</summary><dl><dt>Unit test</dt><dd><b>In general:</b> A small automated check that one piece of code does what it promises.<br><b>In Rust:</b> A <code>fn</code> marked <code>#[test]</code>. <code>cargo test</code> builds a separate test binary and runs every one.</dd><dt>Attribute (<code>#[...]</code>)</dt><dd><b>In general:</b> A note to the compiler attached to the item below it.<br><b>In Rust:</b> <code>#[cfg(test)]</code> compiles the module only for <code>cargo test</code>. <code>#[derive(..)]</code> and <code>#[test]</code> are attributes too.</dd><dt>Macro (<code>name!</code>)</dt><dd><b>In general:</b> Code that writes code.<br><b>In Rust:</b> Anything ending in <code>!</code>: <code>assert_eq!</code>, <code>format!</code>, <code>todo!</code>. They expand at compile time, which is how <code>assert_eq!</code> prints both sides when it fails.</dd><dt>Headless</dt><dd><b>In general:</b> Running a program with no screen or window.<br><b>In Rust:</b> <code>rune::Runtime</code> runs your real view, layout and springs in memory. Your test drives it frame by frame.</dd><dt>Dependency injection</dt><dd><b>In general:</b> Handing a function the things it depends on (clock, input, network) instead of letting it fetch them.<br><b>In Rust:</b> Rune passes <code>dt</code>, pointer events and <code>now</code> in as arguments, so a test can supply fake ones.</dd><dt>Mutation check</dt><dd><b>In general:</b> Deliberately breaking the code to prove a test notices.<br><b>In Rust:</b> Change <code>&gt;=</code> to <code>&gt;</code> in <code>release</code> and run <code>cargo test</code>. If nothing fails, the test isn't guarding that line.</dd></dl></details>
   <div class="spread">
     <div>
       <h3>Concept: a headless runtime</h3>
@@ -921,7 +939,6 @@ test result: ok. 3 passed; 0 failed; … finished in 0.02s</pre>
       one source of time, and could it be the cause?</li>
   </ol>
   <details><summary>✅ Solution (consult after your attempt)</summary>
-    {{snip:l5}}
     <p>Quiz: (1) Each frame delivers one <code>Move</code> phase. One jump is one move, and the
       press-to-drag threshold and the follow behaviour are never exercised. (2) Pulling
       <code>release</code> out as a calculation in Lesson 4. (3) Only <code>rt.frame(dt)</code>,
@@ -933,7 +950,10 @@ test result: ok. 3 passed; 0 failed; … finished in 0.02s</pre>
   <p><b>Expected output:</b> <code>3 passed</code>. <b>If it fails:</b> <code>find</code> returns
     <code>None</code>, so you forgot <code>rt.frame(0.0)</code> before querying. "Back home" fails
     by a few points: run more settling frames.</p>
-  <p><b>✅ Lesson 5 complete. You've learned:</b> headless runtimes, the clock as an injected
+    <h3>Idiot check · the finished code</h3>
+  <p>The complete answer for this lesson. Diff it against your file line by line. Your names and order may differ, but the behaviour shouldn't.</p>
+  {{snip:l5}}
+<p><b>✅ Lesson 5 complete. You've learned:</b> headless runtimes, the clock as an injected
     dependency, and asserting on state and screen together. <b>Next:</b> the GPU.</p>
 </section>
 
@@ -944,6 +964,7 @@ test result: ok. 3 passed; 0 failed; … finished in 0.02s</pre>
     <h2>GPU effects: fire</h2>
     <p class="deck">The view marks a box. A compositor paints fire into it on the GPU, and you
       steer it with four numbers.</p></div></div>
+  <details class="terms" open><summary>Terms in this lesson</summary><dl><dt>GPU / shader</dt><dd><b>In general:</b> The graphics chip, and the small programs it runs for every pixel in parallel.<br><b>In Rust:</b> Rust code talks to the GPU through the <code>wgpu</code> crate. The shaders themselves are written in WGSL, not Rust, and live inside <code>rune-fx</code>.</dd><dt>Compositor</dt><dd><b>In general:</b> The stage that layers separate images into the final frame.<br><b>In Rust:</b> A type that implements Rune's <code>Compositor</code> trait (<code>src/gfx.rs</code>). Rune calls its <code>render</code> every frame.</dd><dt>Trait</dt><dd><b>In general:</b> A named set of abilities a type promises to provide, like an interface in TypeScript.<br><b>In Rust:</b> <code>impl Compositor&lt;S&gt; for Gfx { ... }</code> gives <code>Gfx</code> the methods Rune needs, so <code>run_with</code> accepts it.</dd><dt>Module path</dt><dd><b>In general:</b> The address of a name inside a project.<br><b>In Rust:</b> <code>rune_tutorial::gfx::FIRE</code> is crate <code>rune_tutorial</code> (from <code>src/lib.rs</code>), module <code>gfx</code>, constant <code>FIRE</code>. <code>use</code> brings it into scope.</dd><dt>Integer vs float division</dt><dd><b>In general:</b> Whole-number maths drops the fraction, and decimal maths keeps it.<br><b>In Rust:</b> <code>1 / 3</code> on <code>u32</code> is <code>0</code>. Convert first with <code>heat as f32 / 3.0</code>.</dd><dt>Paint order / z-order</dt><dd><b>In general:</b> What's drawn later covers what's drawn earlier.<br><b>In Rust:</b> In Rune it's the order of <code>.child(..)</code> calls.</dd></dl></details>
   <div class="spread">
     <div>
       <h3>Concept: effect slots</h3>
@@ -991,7 +1012,6 @@ test result: ok. 3 passed; 0 failed; … finished in 0.02s</pre>
     <li>Remove <code>.effect_bleed(..)</code>. What do you predict?</li>
   </ol>
   <details><summary>✅ Solution (consult after your attempt)</summary>
-    {{snip:l6}}
     <p><b>When NOT to extract:</b> <code>log</code> stays an inline <code>let</code>, not a
       <code>fn log()</code>. It's used once, takes no input and has no logic, so a function would
       add a name and remove nothing. <code>flames</code> earns its function: it holds the one
@@ -1006,7 +1026,10 @@ test result: ok. 3 passed; 0 failed; … finished in 0.02s</pre>
   <p><b>Expected output:</b> low embers on a log, and flames that roar after three stokes.
     <b>If it fails:</b> nothing draws, so check you used <code>run_with</code>, not
     <code>run</code>. Flames clipped flat: bleed.</p>
-  <p><b>✅ Lesson 6 complete. You've learned:</b> effect slots, marks and data, and that paint
+    <h3>Idiot check · the finished code</h3>
+  <p>The complete answer for this lesson. Diff it against your file line by line. Your names and order may differ, but the behaviour shouldn't.</p>
+  {{snip:l6}}
+<p><b>✅ Lesson 6 complete. You've learned:</b> effect slots, marks and data, and that paint
     order is z-order. <b>Next:</b> an effect that reads what's behind it.</p>
 </section>
 
@@ -1017,6 +1040,7 @@ test result: ok. 3 passed; 0 failed; … finished in 0.02s</pre>
     <h2>Liquid glass</h2>
     <p class="deck">A glass pill that bends the stripes behind it, and a drop you can pull out
       that clings like water.</p></div></div>
+  <details class="terms" open><summary>Terms in this lesson</summary><dl><dt>Backdrop</dt><dd><b>In general:</b> Whatever is already behind a thing.<br><b>In Rust:</b> A copy of the frame drawn so far, which Rune hands to a slot marked <code>.effect_backdrop(true)</code>.</dd><dt>Signed distance field / smooth union</dt><dd><b>In general:</b> Describing a shape by "how far is this point from the edge", which lets two shapes blend like liquid.<br><b>In Rust:</b> Inside rune-fx's shaders. You only pass shapes (<code>Shape::circle</code>, <code>Shape::rounded</code>) and a blend radius (<code>union_k</code>).</dd><dt>Transaction (<code>Tx</code>)</dt><dd><b>In general:</b> One batch of changes applied together.<br><b>In Rust:</b> <code>&amp;mut Tx</code> comes into handlers. <code>tx.instant()</code> says to land this batch with no spring.</dd><dt>Tuple field</dt><dd><b>In general:</b> Getting at the parts of a pair.<br><b>In Rust:</b> <code>pull: (f32, f32)</code>, read as <code>pull.0</code> / <code>pull.1</code>, or destructured with <code>let (x, y) = pull;</code>.</dd></dl></details>
   <div class="spread">
     <div>
       <h3>Concept: effects that read the backdrop</h3>
@@ -1056,7 +1080,6 @@ test result: ok. 3 passed; 0 failed; … finished in 0.02s</pre>
       <i>spring</i> home rather than teleport?</li>
   </ol>
   <details><summary>✅ Solution (consult after your attempt)</summary>
-    {{snip:l7}}
     <p>Quiz: (1) Just the plain background. The backdrop is only what was drawn <i>before</i> the
       slot. (2) The <code>Up</code> commit isn't instant, so the handle element springs on its
       default motion, and the slot's data follows the view, which the runtime re-runs while the
@@ -1067,7 +1090,10 @@ test result: ok. 3 passed; 0 failed; … finished in 0.02s</pre>
   <p><b>Expected output:</b> bent stripes inside the pill, and a drop that stretches out with a
     neck, snaps free, and springs home. <b>If it fails:</b> a flat dark pill means no backdrop
     flag. A drop that lags your pointer: no <code>instant</code>.</p>
-  <p><b>✅ Lesson 7 complete. You've learned:</b> backdrop reads, smooth unions, and choosing
+    <h3>Idiot check · the finished code</h3>
+  <p>The complete answer for this lesson. Diff it against your file line by line. Your names and order may differ, but the behaviour shouldn't.</p>
+  {{snip:l7}}
+<p><b>✅ Lesson 7 complete. You've learned:</b> backdrop reads, smooth unions, and choosing
     instant vs sprung per commit. <b>Next:</b> effects driven by time.</p>
 </section>
 
@@ -1078,6 +1104,7 @@ test result: ok. 3 passed; 0 failed; … finished in 0.02s</pre>
     <h2>Shockwave and the clock</h2>
     <p class="deck">Press a button and a ring of distortion ripples through every tile on
       screen.</p></div></div>
+  <details class="terms" open><summary>Terms in this lesson</summary><dl><dt>Frame loop</dt><dd><b>In general:</b> The cycle that redraws the screen many times a second.<br><b>In Rust:</b> Rune owns it. <code>AppSpec::poll</code> is your hook into each pass, with signature <code>fn(&amp;mut S, f64, &amp;mut Tx) -&gt; bool</code>.</dd><dt>Side effect</dt><dd><b>In general:</b> Anything a function does besides return a value, like reading the clock or writing state.<br><b>In Rust:</b> <code>poll</code> takes <code>&amp;mut State</code> and reads time, so it's an Action. Keep it tiny.</dd><dt><code>f64</code> vs <code>f32</code></dt><dd><b>In general:</b> Two sizes of decimal number. The bigger one is more precise.<br><b>In Rust:</b> Rune's clock is <code>f64</code> seconds, so it stays precise after hours. Shader data is <code>f32</code>, so you convert with <code>as f32</code>.</dd><dt><code>Duration</code></dt><dd><b>In general:</b> A length of time, as opposed to a moment in time.<br><b>In Rust:</b> <code>std::time::Duration</code>. <code>Duration::ZERO</code> passed to <code>tx.wake_after</code> means "next frame".</dd></dl></details>
   <div class="spread">
     <div>
       <h3>Concept: store <i>when</i>, not <i>how far along</i></h3>
@@ -1116,7 +1143,6 @@ test result: ok. 3 passed; 0 failed; … finished in 0.02s</pre>
     <li><code>poll</code> returns <code>true</code> forever. What does it cost, and who notices?</li>
   </ol>
   <details><summary>✅ Solution (consult after your attempt)</summary>
-    {{snip:l8}}
     <p>Quiz: (1) It distorts what was drawn before it, so anything after it is untouched.
       (2) A wave plays at launch, because time 0 is "just now". (3) The view rebuilds every frame
       for nothing: wasted CPU, and on a laptop, battery. Rune's own guidance is that
@@ -1128,7 +1154,10 @@ test result: ok. 3 passed; 0 failed; … finished in 0.02s</pre>
     <b>If it fails:</b> a wave at launch means the <code>fired_at</code> default. A wave that starts late, or not
     at all, means <code>poll</code> isn't asking for frames, so <code>now</code> is stale when you
     press.</p>
-  <p><b>✅ Lesson 8 complete. You've learned:</b> <code>poll</code> as the one clock Action,
+    <h3>Idiot check · the finished code</h3>
+  <p>The complete answer for this lesson. Diff it against your file line by line. Your names and order may differ, but the behaviour shouldn't.</p>
+  {{snip:l8}}
+<p><b>✅ Lesson 8 complete. You've learned:</b> <code>poll</code> as the one clock Action,
     start times over counters, and backdrop distortion. <b>Next:</b> the closing checks.</p>
 </section>
 
